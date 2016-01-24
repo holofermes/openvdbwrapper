@@ -1,0 +1,50 @@
+// Created by kl2dfg (processFunction)
+{
+  "objectType" : "Func",
+  "metadata" : {
+    "uiTooltip" : "Sets the value located at targetIndex as a linear combination of other values.\n\n\n Supported by FloatGridAttribute"
+    },
+  "title" : "LinearCombine",
+  "ports" : [
+    {
+      "objectType" : "Port",
+      "nodePortType" : "IO",
+      "name" : "this",
+      "execPortType" : "IO",
+      "typeSpec" : "FloatGridAttribute"
+      },
+    {
+      "objectType" : "Port",
+      "nodePortType" : "Out",
+      "name" : "sourceAttr",
+      "execPortType" : "In",
+      "typeSpec" : "Object"
+      },
+    {
+      "objectType" : "Port",
+      "nodePortType" : "Out",
+      "name" : "sourceIndices",
+      "execPortType" : "In",
+      "typeSpec" : "LocalL16UInt32Array"
+      },
+    {
+      "objectType" : "Port",
+      "nodePortType" : "Out",
+      "name" : "sourceWeights",
+      "execPortType" : "In",
+      "typeSpec" : "LocalL16ScalarArray"
+      },
+    {
+      "objectType" : "Port",
+      "nodePortType" : "Out",
+      "name" : "targetIndex",
+      "execPortType" : "In",
+      "typeSpec" : "Size"
+      }
+    ],
+  "extDeps" : {
+    "OpenVDBGeometry" : "*"
+    },
+  "presetGUID" : "E2DAC0F3A7DA5414BBF246A637AF3262",
+  "code" : "require OpenVDBGeometry;\n\ndfgEntry {\n  Ref<Object> sourceAttr_ref = sourceAttr;\n  this.linearCombine(sourceAttr_ref, sourceIndices, sourceWeights, targetIndex);\n}\n"
+  }

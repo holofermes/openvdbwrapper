@@ -1,0 +1,29 @@
+// Created by kl2dfg (processFunction)
+{
+  "objectType" : "Func",
+  "metadata" : {
+    "uiTooltip" : "If all attribute values can be expressed as a constant Scalar array, returns the constant number of elements, 0 otherwise.\n\n Supported by FloatGridAttribute"
+    },
+  "title" : "GetScalarValueSize",
+  "ports" : [
+    {
+      "objectType" : "Port",
+      "nodePortType" : "Out",
+      "name" : "this",
+      "execPortType" : "In",
+      "typeSpec" : "FloatGridAttribute"
+      },
+    {
+      "objectType" : "Port",
+      "nodePortType" : "In",
+      "name" : "result",
+      "execPortType" : "Out",
+      "typeSpec" : "Size"
+      }
+    ],
+  "extDeps" : {
+    "OpenVDBGeometry" : "*"
+    },
+  "presetGUID" : "A8770C4D9C7E7D957F63866CFC1B561E",
+  "code" : "require OpenVDBGeometry;\n\ndfgEntry {\n  result = this.getScalarValueSize();\n}\n"
+  }

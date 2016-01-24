@@ -1,0 +1,39 @@
+// Created by kl2dfg (processFunction)
+{
+  "objectType" : "Func",
+  "metadata" : {
+    "uiTooltip" : "Adds N VDBVolumes and returns the index of the first of the consecutive indices.\n\n Supported by VDBVolumes"
+    },
+  "title" : "AddVDBVolumes",
+  "ports" : [
+    {
+      "objectType" : "Port",
+      "metadata" : {
+        "uiColor" : "{\n  \"r\" : 51,\n  \"g\" : 1,\n  \"b\" : 106\n  }"
+        },
+      "nodePortType" : "IO",
+      "name" : "this",
+      "execPortType" : "IO",
+      "typeSpec" : "VDBVolumes"
+      },
+    {
+      "objectType" : "Port",
+      "nodePortType" : "Out",
+      "name" : "count",
+      "execPortType" : "In",
+      "typeSpec" : "Size"
+      },
+    {
+      "objectType" : "Port",
+      "nodePortType" : "In",
+      "name" : "result",
+      "execPortType" : "Out",
+      "typeSpec" : "Size"
+      }
+    ],
+  "extDeps" : {
+    "OpenVDBGeometry" : "*"
+    },
+  "presetGUID" : "7AFD0D6BB5EF2F1496A2F4EBA07D0B3E",
+  "code" : "require OpenVDBGeometry;\n\ndfgEntry {\n  result = this.addVDBVolumes(count);\n}\n"
+  }

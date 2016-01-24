@@ -1,0 +1,22 @@
+// Created by kl2dfg (processStructConstant)
+{
+  "objectType" : "Func",
+  "metadata" : {
+    "uiAlwaysShowDaisyChainPorts" : "true"
+    },
+  "title" : "FloatGridAccelleration",
+  "ports" : [
+    {
+      "objectType" : "Port",
+      "nodePortType" : "Out",
+      "name" : "value",
+      "execPortType" : "In",
+      "typeSpec" : "FloatGridAccelleration"
+      }
+    ],
+  "extDeps" : {
+    "OpenVDBGeometry" : "*"
+    },
+  "presetGUID" : "2D5D87D610D643507AB4E6FD63497579",
+  "code" : "dfgEntry {\n}\n"
+  }

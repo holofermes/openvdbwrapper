@@ -1,0 +1,59 @@
+// Created by kl2dfg (processFunction)
+{
+  "objectType" : "Func",
+  "metadata" : {
+    "uiTooltip" : "For a GeometryLocation returned by this SpatialQueryable, returns the attribute indices and weights\nrequired to linearly interpolate attribute values. The GeometryLocation must be valid.\nSee :ref:`geometrylocationstructure` for more details.\n\n Supported by VDBVolumes"
+    },
+  "title" : "GetLocationAttributeIndicesAndWeights[]",
+  "ports" : [
+    {
+      "objectType" : "Port",
+      "metadata" : {
+        "uiColor" : "{\n  \"r\" : 51,\n  \"g\" : 1,\n  \"b\" : 106\n  }"
+        },
+      "nodePortType" : "Out",
+      "name" : "this",
+      "execPortType" : "In",
+      "typeSpec" : "VDBVolumes[]"
+      },
+    {
+      "objectType" : "Port",
+      "nodePortType" : "Out",
+      "defaultValues" : {
+        "GeometryLocation[]" : [
+          {
+            "index" : -1,
+            "subIndex" : 0,
+            "barycentric" : {
+              "x" : 0,
+              "y" : 0,
+              "z" : 0
+              }
+            }
+          ]
+        },
+      "name" : "location",
+      "execPortType" : "In",
+      "typeSpec" : "GeometryLocation[]"
+      },
+    {
+      "objectType" : "Port",
+      "nodePortType" : "IO",
+      "name" : "attributeIndices",
+      "execPortType" : "IO",
+      "typeSpec" : "LocalL16UInt32Array[]"
+      },
+    {
+      "objectType" : "Port",
+      "nodePortType" : "IO",
+      "name" : "weights",
+      "execPortType" : "IO",
+      "typeSpec" : "LocalL16ScalarArray[]"
+      }
+    ],
+  "extDeps" : {
+    "OpenVDBGeometry" : "*"
+    },
+  "presetGUID" : "DE4B2A3AFC62B8EAEE9C083CF4A43439",
+  "code" : "require OpenVDBGeometry;\n\noperator OpenVDBGeometry_VDBVolumes_getLocationAttributeIndicesAndWeights_task<<<index>>>(\n  in VDBVolumes[] this\n, in GeometryLocation[] location\n, io LocalL16UInt32Array[] attributeIndices\n, io LocalL16ScalarArray[] weights\n) {\n  this[index < this.size() ? index : this.size() - 1].getLocationAttributeIndicesAndWeights(location[index < location.size() ? index : location.size() - 1], attributeIndices[index < attributeIndices.size() ? index : attributeIndices.size() - 1], weights[index < weights.size() ? index : weights.size() - 1]);\n}\n\ndfgEntry {\n  if( this.size() == 0) return;\n  if( location.size() == 0) return;\n  if( attributeIndices.size() == 0) return;\n  if( weights.size() == 0) return;\n  Size task_size = this.size();\n  if(task_size < location.size()) task_size = location.size();\n  attributeIndices.resize(task_size);\n  weights.resize(task_size);\n  if(task_size < 10000 /* pex margin */) {\n    for(Size index = 0; index < task_size; index++) {\n      OpenVDBGeometry_VDBVolumes_getLocationAttributeIndicesAndWeights_task(index, this, location, attributeIndices, weights);\n    }\n  } else {\n    OpenVDBGeometry_VDBVolumes_getLocationAttributeIndicesAndWeights_task<<<task_size>>>(this, location, attributeIndices, weights);\n  }\n}\n"
+  }

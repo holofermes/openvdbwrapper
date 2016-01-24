@@ -1,0 +1,477 @@
+/// Returns the point index corresponding to the location.
+/// \category SpatialQueryable
+inline Size VDBVolumes.getLocationPointIndex( GeometryLocation location ) {
+  return location.index;
+}
+
+/// Returns 'true' if the point location is defined at point's center.
+/// See :kl-ref:`VDBVolumes.getLocationBoundingSphereCoordinate` for more details relatively to sized points' GeometryLocation positions.
+/// \category SpatialQueryable
+inline Boolean VDBVolumes.isLocationAtPointCenter( GeometryLocation location ) {
+  return location.barycentric == Vec3();
+}
+
+/**
+  Sized points' GeometryLocation can encode a spherical coordinate relative to their bounding sphere.
+  For a sized point, returns a vector corresponding to point sphere's local coordinate, otherwise, returns Vec3(0,0,0).
+  It returns a vector of unit length corresponding to the surface a sphere of radius 1, such that the actual position can be computed as:
+\rst
+
+::
+
+  Size pointIndex = points.getPointIndex( location );
+  Vec3 position = points.getPosition( pointIndex ) + points.getBoundingSphereCoordinate( location ) * points.getSize( pointIndex );
+
+\endrst
+  \seealso VDBVolumes.isLocationAtPointCenter
+  \category SpatialQueryable
+*/
+inline Vec3 VDBVolumes.getLocationBoundingSphereCoordinate( GeometryLocation location ) {
+  return location.barycentric;
+}
+
+inline VDBVolumes.getLocationAttributeIndicesAndWeights?( GeometryLocation location, io LocalL16UInt32Array attributeIndices, io LocalL16ScalarArray weights ) {
+  attributeIndices.push(location.index);
+  weights.push(1.0);
+}
+
+/// Evaluates the position attribute at a specific location.
+///
+/// For a sized particle, the returned position might be a position on its bounding sphere surface when applicable
+/// (eg: resulting from a :kl-ref:`VDBVolumes.raycast` or :kl-ref:`VDBVolumes.getClosest` call).
+/// See :kl-ref:`VDBVolumes.getLocationBoundingSphereCoordinate` for more information.
+/// \category SpatialQueryable
+inline Vec3 VDBVolumes.getPositionAtLocation( GeometryLocation location ) {
+  return this.getPositionAtIndex(location.index);
+  // if( location.barycentric == Vec3() )
+    // return position;
+
+  //The spherical point's coordinate was encoded with barycentrics
+  // return position + location.barycentric * (this.getSize(location.index) * 0.5);
+}
+
+
+struct FloatGridAccelleration{
+  Boolean parallel;
+  FloatConstAccessor accessor[];
+  FloatGridSamplerNative sampler[];
+  VolumeRayIntersector primary[];
+  VolumeRayIntersector shadow[];
+  Ref<StatisticSource> statsParent;
+};
+
+/// \internal
+object VDBVolumesSpatialQueryCache {
+  Ref<VDBVolumes> volumes;
+
+  Size prevCount;
+  Size gridsVersion;
+  Size positionsVersion;
+  Ref<FloatGridAttribute> gridAttr;
+  Boolean dirtyGrids;
+
+  FloatGridAccelleration acceleration;
+
+  SimpleLock updateLock;
+
+  FewObjectsRecyclingAllocator queryAllocator;//VDBVolumesSpatialQuery objects
+};
+
+      // if( this.statsParent )
+      //   AddStatisticsChild( this.statsParent, this.octree.autoStats );
+inline FloatGridAccelleration.prepare!( Size approximateNumberOfQueries ){
+  if (approximateNumberOfQueries > 500)
+    this.parallel = true;
+}
+
+// inline Ref<GenericValue> FloatGridAccelleration._getOptionAndValidate( GenericValueContainer options, String name, Type expectedType ) {
+//   if( !options ) {
+//     Ref<GenericValue> nullValue = null;
+//     return nullValue;
+//   }
+//   Ref<GenericValue> value = options.get(name);
+//   if( Boolean(value) && value.type() != expectedType )
+//     throw( "FloatGridAccelleration.synchronizeOptions: '"+name+"' must be a "+expectedType );
+//   return value;
+// }
+
+// function Boolean FloatGridAccelleration.synchronizeOptions!( GenericValueContainer options ) {
+//   Boolean changed;
+
+//   String methodString;
+//   Ref<GenericStringValue> methodValue = this._getOptionAndValidate( options, PrepareForSpatialQueriesOption_method, GenericStringValue );
+//   if( methodValue )
+//     methodString = methodValue.get();
+//   else if(this.sparseGrid)
+//     methodString = PrepareForSpatialQueriesOption_sparseGrid;//keep what we have
+//   else
+//     methodString = PrepareForSpatialQueriesOption_octree;//default
+// }
+
+
+
+function FloatGridAccelleration.init!(Ref<VDBVolumes> volumes ){
+  this.statsParent = volumes.autoStats;
+  Size count = volumes.gridCount();
+  if (count == 0)
+    return;
+  this.sampler.resize(0);
+  this.accessor.resize(0);
+  this.shadow.resize(0);
+  this.shadow.resize(count);
+  this.primary.resize(0);
+  this.primary.resize(count);
+
+  for (Size i = 0; i < count; i++) {
+    Ref<FloatGrid> grid = volumes.getFloatGrid(i);
+
+    this.primary[i].__construct(grid, 0);
+    this.shadow[i].__construct(this.primary[i]);
+    this.accessor.push(grid.getConstAccessor());
+    this.sampler.push(FloatGridSamplerNative(this.accessor[i], grid.transform));
+
+  }
+
+}
+
+
+function VDBVolumesSpatialQueryCache( VDBVolumes volumes ) {
+  this.volumes = volumes;
+  this.acceleration.init( volumes );
+  // this.acceleration = SpatialAccelerationChooser( volumes.autoStats );
+  this.updateLock = SimpleLock();
+  this.queryAllocator = FewObjectsRecyclingAllocator( VDBVolumesSpatialQuery(this), 1000, "Warning: VDBVolumes.beginSpatialQuery: called more than 1000 times, intentional or missing a matching 'endSpatialQuery'?" );
+  this.dirtyGrids = true;
+
+
+}
+
+/// \internal
+object VDBVolumesRaycastResult : RaycastResult {
+  Vec3 start;
+  Vec3 unitDir;
+
+  GeometryLocation location;
+  Ref<VDBVolumesSpatialQueryCache> queryCache;
+};
+
+function VDBVolumesRaycastResult(Ref<VDBVolumesSpatialQueryCache> queryCache) {
+  this.queryCache = queryCache;
+}
+
+function VDBVolumesRaycastResult.reset!( Vec3 start, Vec3 unitDir, Boolean doubleSided, Scalar coneThreshold ){
+  this.start = start;
+  this.unitDir = unitDir;
+  this.location = GeometryLocation();//Invalidate
+}
+
+inline Boolean intersectFunc(Ref<FloatGrid> grid, Ref<VDBVolumesRaycastResult> result, io Scalar maxDistance ){
+  BBox_d bbox(grid.worldSpaceBBox());
+  Float32 dirfrac_x = 1.0f / result.start.x;
+  Float32 dirfrac_y = 1.0f / result.start.y;
+  Float32 dirfrac_z = 1.0f / result.start.z;
+  Float32 t11= Float32((bbox.min.x - result.unitDir.x)*dirfrac_x);
+  Float32 t2 = Float32((bbox.max.x - result.unitDir.x)*dirfrac_x);
+  Float32 t3 = Float32((bbox.min.y - result.unitDir.y)*dirfrac_y);
+  Float32 t4 = Float32((bbox.max.y - result.unitDir.y)*dirfrac_y);
+  Float32 t5 = Float32((bbox.min.z - result.unitDir.z)*dirfrac_z);
+  Float32 t6 = Float32((bbox.max.z - result.unitDir.z)*dirfrac_z);
+
+  Float32 t0 = Math_max(Math_max(Math_min(t11, t2), Math_min(t3, t4)), Math_min(t5, t6));
+  Float32 t1 = Math_min(Math_min(Math_max(t11, t2), Math_max(t3, t4)), Math_max(t5, t6));
+
+  if (t0 > t1)
+    return false;
+
+  if ((0 /*near*/ < t0) & (t0 < maxDistance)) {
+    maxDistance = t0;
+  }
+
+  if ((0 /*near*/ < t1) & (t1 < maxDistance)) {
+    maxDistance = t1;
+  }
+  return true;
+}
+
+
+function Boolean VDBVolumesRaycastResult.compareAndUpdate!( Size objectIndex, io Scalar maxDistance ) {
+
+  Size gcount = this.queryCache.gridAttr.size();
+  if (gcount == 0)
+    return gcount;
+
+  Size count=0;
+  for (Size i = 0; i < gcount; i++) {
+    Ref<FloatGrid> grid = this.queryCache.gridAttr.values[i];
+    // Ref<FloatGrid> grid = this.queryCache.gridAttr.values[objectIndex];
+    if (intersectFunc(grid, this, maxDistance)){
+      Vec3 wsP = this.unitDir+maxDistance*this.start;
+      this.location.index = grid.transform.worldToFlatIndex(wsP);
+      return true;
+    }
+  }
+
+  return false;
+}
+
+function VDBVolumesRaycastResult.copyResultFrom!( Ref<RaycastResult> other ) {
+  Ref<VDBVolumesRaycastResult> otherResult = other;
+  this.location = otherResult.location;
+}
+
+/// \internal
+object VDBVolumesClosestResult : ClosestResult {
+  Vec3 position;
+  Vec3 scaling;
+  Boolean hasScaling;
+  GeometryLocation location;
+  Ref<VDBVolumesSpatialQueryCache> queryCache;
+};
+
+function VDBVolumesClosestResult(Ref<VDBVolumesSpatialQueryCache> queryCache) {
+  this.queryCache = queryCache;
+}
+
+function VDBVolumesClosestResult.reset!( Vec3 position, Vec3 scaling, Boolean hasScaling ) {
+  this.position = position;
+  this.scaling = scaling;
+  this.hasScaling = hasScaling;
+  this.location = GeometryLocation();//Invalidate
+}
+
+function Boolean VDBVolumesClosestResult.compareAndUpdate!( Size objectIndex, io Scalar maxScaledSquaredDistance ){
+// function Boolean VDBVolumesClosestResult.getClosest!( Boolean dirtyGrids ) {
+  Size gcount = this.queryCache.gridAttr.size();
+  if (gcount == 0)
+    return gcount;
+
+  Size count=0;
+  for (Size i = 0; i < gcount; i++) {
+    //Compute distance vector in local space, consider scaling afterward (if any)
+    Ref<FloatGrid> grid = this.queryCache.gridAttr.values[i];
+    Coord coord = grid.transform.worldToIndex(this.position);
+    Vec3_d isCPT = this.queryCache.acceleration.accessor[i].isCPT(coord);
+    Coord isCoord(isCPT.x, isCPT.y, isCPT.z);
+    Vec3 wsCPT = grid.transform.indexToWorld(isCoord).toVec3();
+    // maxScaledSquaredDistance = (this.position-wsCPT).lengthSquared();
+    this.location.index = grid.transform.worldToFlatIndex(wsCPT);
+  }
+  return true;
+}
+
+function VDBVolumesClosestResult.copyResultFrom!( Ref<ClosestResult> other ) {
+  Ref<VDBVolumesClosestResult> otherResult = other;
+  this.location = otherResult.location;
+}
+
+/// \internal
+object VDBVolumesSpatialQuery : SpatialQuery {
+  // SpatialQueryData data;
+  GeometryLocationAccumulator locationAccumulator;//For query like intersectLines
+  VDBVolumesRaycastResult raycastResult;
+  VDBVolumesClosestResult closestResult;
+  Ref<VDBVolumesSpatialQueryCache> queryCache;
+};
+
+function VDBVolumesSpatialQuery( Ref<VDBVolumesSpatialQueryCache> queryCache ) {
+  this.queryCache = queryCache;
+  this.raycastResult = VDBVolumesRaycastResult(queryCache);
+  this.closestResult = VDBVolumesClosestResult(queryCache);
+}
+
+
+/// \internal
+function Ref<VDBVolumesSpatialQueryCache> VDBVolumes.getQueryCache() {
+  //Note: this is complex to avoid unrequired locking
+  Ref<VDBVolumesSpatialQueryCache> queryCache = null;
+  if( this.spatialAccelerationCache ) {
+    queryCache = this.spatialAccelerationCache;
+  } else {
+    Ref<ThreadsafeMetaDataContainer> mutableMetaData = this.metaData;//Make non-const
+    AutoLock AL(mutableMetaData.simpleLock);
+    //Another thread might have created it
+    queryCache = mutableMetaData.lockedGet("spatialAccel");
+    if( !queryCache ) {
+      VDBVolumesSpatialQueryCache newQueryCache = VDBVolumesSpatialQueryCache(this);
+      mutableMetaData.lockedSet("spatialAccel", newQueryCache);
+      queryCache = newQueryCache;
+    }
+  }
+  //Check if it is synchronized. Note: another thread might be synchronizing it at the same time.
+  // Ref<GeometryAttributes> attributes = this.getAttributes();
+  // Ref<Vec3Attribute> positions = attributes.getPositions();
+
+  if( /*queryCache.posAttr !== positions || positions.getVersion() != queryCache.positionsVersion ||
+      queryCache.sizeAttr !== this.gridAttr ||*/
+      (Boolean(this.gridAttributes) && this.gridAttributes.getVersion() != queryCache.gridsVersion) ||
+      (!this.gridAttributes) ) {
+    //We assume no lines changes during spatial queries. TODO: use a readers-writers lock here.
+    AutoLock AL(queryCache.updateLock);
+
+    // //NOTE: conditions need to be checked again since another thread might have updated it
+    // if( synchronizeVersion( positions.getVersion(), queryCache.positionsVersion ) || positions !== queryCache.posAttr ) {
+    //   queryCache.posAttr = positions;
+    //   queryCache.dirtyGrids = true;
+    // }
+
+    // if( synchronizeVersion( positions.size(), queryCache.prevCount ) ) {
+    //   // queryCache.acceleration.setObjectCount( positions.size(), false );
+    //   queryCache.dirtyGrids = true;
+    // }
+
+    if( this.gridAttributes ) {
+      if( synchronizeVersion( this.gridAttributes.getVersion(), queryCache.gridsVersion ) || this.gridAttributes !== queryCache.gridAttr ) {
+        queryCache.gridAttr = this.gridAttributes;
+        queryCache.dirtyGrids = true;
+      }
+    }
+  }
+  return queryCache;
+}
+
+
+function VDBVolumes.prepareForSpatialQueries( Size approximateNumberOfQueries, GenericValueContainer options ) {
+  Ref<VDBVolumesSpatialQueryCache> queryCache = this.getQueryCache();
+  if( queryCache.queryAllocator.allocatedCount() )
+    throw("VDBVolumes.prepareForSpatialQueries: preparing before all endSpatialQuery() were called");
+  {
+    AutoLock AL(queryCache.updateLock);//TODO: use readers-writers lock
+    // Boolean accelerationChanged = queryCache.acceleration.synchronizeOptions( options );
+
+    // if( queryCache.dirtyGrids ) {
+      // queryCache.acceleration.setObjectCount( queryCache.gridAttr.voxelCount(), true );
+      // for( Size i = 0; i < queryCache.gridAttr.size(); ++i ) {
+      //   Ref<FloatGrid> grid = queryCache.gridAttr.values[i];
+      //   LocalBoundingVolume bVol;
+      //   bVol.bBoxInit()
+      //   bVol.bBoxAddBBox_d(grid.worldSpaceBBox());
+      //   queryCache.acceleration.updateObjectVolume( i, bbox.bBoxGetMin(), bbox.bBoxGetMax() );
+      // }
+      // queryCache.dirtyGrids = false;
+    // }
+    queryCache.acceleration.prepare( approximateNumberOfQueries );
+  }
+}
+
+inline VDBVolumes.removeSpatialQueryAcceleration!() {
+  this.metaData.remove("spatialAccel");
+  this.spatialAccelerationCache = null;
+}
+
+inline Ref<SpatialQuery> VDBVolumes.beginSpatialQuery() {
+  return this.getQueryCache().queryAllocator.allocate();
+}
+
+inline VDBVolumes.endSpatialQuery( Ref<SpatialQuery> query ) {
+  Ref<VDBVolumesSpatialQuery> pointsQuery = query;
+  if( pointsQuery.queryCache.volumes !== this )
+    throw("VDBVolumes.endSpatialQuery: invalid query object for this");
+  this.getQueryCache().queryAllocator.free(query);
+}
+
+inline GeometryLocation VDBVolumesSpatialQuery.raycast!( Ray ray, Boolean doubleSided, Scalar coneThreshold, Scalar maxDistance ) {
+  // Ref<RaycastResult> result = this.raycastResult;
+  this.raycastResult.reset( ray.start, ray.direction, doubleSided, maxDistance);
+  Size idx=0;
+  Scalar IOmaxDistance = maxDistance;
+  this.raycastResult.compareAndUpdate( idx, IOmaxDistance);
+  // this.queryCache.acceleration.raycast( !this.queryCache.dirtyGrids, ray, maxDistance, result );
+  return this.raycastResult.location;
+}
+
+/// Raycasts the VDBVolumes geometry, taking into account the point sizes if applicable (see :ref:`pointsizes`).
+/// See :kl-ref:`SpatialQueryable.raycast` for more details about this function and parameters.
+/// \note For a sized particle, the returned location can include point's bounding sphere's position, and :kl-ref:`VDBVolumes.getPositionAtLocation` will return a position on point's bounding sphere, if applicable.
+/// \seealso VDBVolumes.getLocationBoundingSphereCoordinate
+/// \category SpatialQueryable
+inline GeometryLocation VDBVolumes.raycast( Ray ray, Boolean doubleSided, Scalar coneThreshold, Scalar maxDistance ) {
+  Ref<VDBVolumesSpatialQuery> query = this.beginSpatialQuery();
+  GeometryLocation location = query.raycast( ray, doubleSided, coneThreshold, maxDistance );
+  this.endSpatialQuery(query);
+  return location;
+}
+
+inline GeometryLocation VDBVolumesSpatialQuery.getClosest!( Vec3 position, Vec3 scaling, Scalar maxUnscaledDistance ) {
+  this.closestResult.reset( position, scaling, 0 /*hasScaling*/);
+  Size idx=0;
+  Scalar fakes=0.0;
+  this.closestResult.compareAndUpdate( idx, fakes);
+  return this.closestResult.location;
+
+  // Ref<ClosestResult> result = this.closestResult;
+  // this.queryCache.acceleration.getClosest( !this.queryCache.dirtyGrids, position, scaling, maxUnscaledDistance, result );
+  // return this.closestResult.location;
+}
+
+/// Gets the closest location of the VDBVolumes geometry, taking into account the point sizes if applicable (see :ref:`pointsizes`).
+/// See :kl-ref:`SpatialQueryable.getClosest` for more details about this function and parameters.
+/// \note For a sized particle, the returned location can include point's bounding sphere's position, and :kl-ref:`VDBVolumes.getPositionAtLocation` will return a position on point's bounding sphere, if applicable.
+/// \seealso VDBVolumes.getLocationBoundingSphereCoordinate
+/// \category SpatialQueryable
+inline GeometryLocation VDBVolumes.getClosest( Vec3 position, Vec3 scaling, Scalar maxUnscaledDistance ) {
+  Ref<VDBVolumesSpatialQuery> query = this.beginSpatialQuery();
+  GeometryLocation location = query.getClosest( position, scaling, maxUnscaledDistance );
+  this.endSpatialQuery(query);
+  return location;
+}
+
+function Size VDBVolumesSpatialQuery.getElementsInBBox!( Vec3 min, Vec3 max ) {
+  return 0;
+  // return this.queryCache.acceleration.getElementsInBBox( this.queryCache.points, !this.queryCache.dirtyGrids, min, max, this.data );
+}
+
+function Size VDBVolumesSpatialQuery.getElementsInBSphere!( Vec3 center, Scalar radius ) {
+  return 0;
+  // return this.queryCache.acceleration.getElementsInBSphere( this.queryCache.points, !this.queryCache.dirtyGrids, center, radius, this.data );
+}
+
+function Size VDBVolumesSpatialQuery.getQueriedElement( Size index ) {
+  return 1;
+  // return this.data.getQueriedElement(index);
+}
+
+function Boolean VDBVolumes.areGeometryLocationsEquivalent( GeometryLocation location0, GeometryLocation location1 ) {
+  //Should we take into account the 'normals' thing?
+  return location0.index == location1.index;
+}
+
+function Size VDBVolumesSpatialQuery.getLineIntersections!( Vec3 start, Vec3 end, UInt8 lineIntersectionType ) {
+  this.locationAccumulator.reset();
+
+  Size gcount = this.queryCache.gridAttr.size();
+  if (gcount == 0)
+    return gcount;
+
+  Size count=0;
+  for (Size i = 0; i < gcount; i++) {
+    Ref<FloatGrid> grid = this.queryCache.gridAttr.values[i];
+    VdbRay ray();
+    Vec3 direction = (end-start).unit();
+    ray.setTimes(0.001, Float64(direction.length()));
+    direction.normalize();
+    ray.setEye(Vec3_d(Float64(start.x), Float64(start.y), Float64(start.z)));
+    ray.setDir(Vec3_d(Float64(direction.x), Float64(direction.y), Float64(direction.z)));
+    if( !this.queryCache.acceleration.primary[i].setWorldRay(ray))
+      continue;
+    TimeSpan pTS[];
+    Float64 pStep = 1.0;
+    this.queryCache.acceleration.primary[i].hits(pTS);
+    for (Size k=0;k<pTS.size(); ++k) {
+        Float64 pT = pStep*ceil(pTS[k].t0/pStep), pT1=pTS[k].t1;
+        for (; pT <= pT1; pT += pStep) {
+          Vec3_d wsPos = this.queryCache.acceleration.primary[i].getWorldPos(pT);
+          GeometryLocation location;
+          location.index = grid.transform.worldToFlatIndex(wsPos.toVec3());
+          this.locationAccumulator.push( location,  0.0/*squaredDist*/ );
+        }
+    }
+  }
+  count = this.locationAccumulator.size();
+  if( count > 1 )
+    this.locationAccumulator.sort();
+  return count;
+}
+
+function GeometryLocation VDBVolumesSpatialQuery.getQueriedLocation( Size index ) {
+  return this.locationAccumulator.getSortedLocation( index );
+}

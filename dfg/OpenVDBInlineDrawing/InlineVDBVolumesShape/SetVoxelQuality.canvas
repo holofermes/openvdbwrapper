@@ -1,0 +1,29 @@
+// Created by kl2dfg (processFunction)
+{
+  "objectType" : "Func",
+  "metadata" : {
+    "uiTooltip" : "sets the point size used for rendering\n\n Supported by InlineVDBVolumesShape"
+    },
+  "title" : "SetVoxelQuality",
+  "ports" : [
+    {
+      "objectType" : "Port",
+      "nodePortType" : "IO",
+      "name" : "this",
+      "execPortType" : "IO",
+      "typeSpec" : "InlineVDBVolumesShape"
+      },
+    {
+      "objectType" : "Port",
+      "nodePortType" : "Out",
+      "name" : "voxelQuality",
+      "execPortType" : "In",
+      "typeSpec" : "Scalar"
+      }
+    ],
+  "extDeps" : {
+    "OpenVDBInlineDrawing" : "*"
+    },
+  "presetGUID" : "9359283CB85E25EA74750A48C50994C6",
+  "code" : "require OpenVDBInlineDrawing;\n\ndfgEntry {\n  this.setVoxelQuality(voxelQuality);\n}\n"
+  }

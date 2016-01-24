@@ -1,0 +1,29 @@
+// Created by kl2dfg (processFunction)
+{
+  "objectType" : "Func",
+  "metadata" : {
+    "uiTooltip" : "\n\n Supported by OGLVDBVolumesBBox"
+    },
+  "title" : "OGLVDBVolumesBBox",
+  "ports" : [
+    {
+      "objectType" : "Port",
+      "nodePortType" : "Out",
+      "name" : "name",
+      "execPortType" : "In",
+      "typeSpec" : "String"
+      },
+    {
+      "objectType" : "Port",
+      "nodePortType" : "In",
+      "name" : "result",
+      "execPortType" : "Out",
+      "typeSpec" : "OGLVDBVolumesBBox"
+      }
+    ],
+  "extDeps" : {
+    "OpenVDBInlineDrawing" : "*"
+    },
+  "presetGUID" : "204376CB9E24CBFB56B65E22889A42BC",
+  "code" : "require OpenVDBInlineDrawing;\n\ndfgEntry {\n  result = OGLVDBVolumesBBox(name);\n}\n"
+  }

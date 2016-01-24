@@ -1,0 +1,36 @@
+// Created by kl2dfg (processFunction)
+{
+  "objectType" : "Func",
+  "metadata" : {
+    "uiTooltip" : "@brief Sample value in integer index space\n@param ijk the location in index space\n\n Supported by FloatGridSampler"
+    },
+  "title" : "IsSample",
+  "ports" : [
+    {
+      "objectType" : "Port",
+      "nodePortType" : "Out",
+      "name" : "this",
+      "execPortType" : "In",
+      "typeSpec" : "FloatGridSampler"
+      },
+    {
+      "objectType" : "Port",
+      "nodePortType" : "Out",
+      "name" : "ijk",
+      "execPortType" : "In",
+      "typeSpec" : "Coord"
+      },
+    {
+      "objectType" : "Port",
+      "nodePortType" : "In",
+      "name" : "result",
+      "execPortType" : "Out",
+      "typeSpec" : "Float32"
+      }
+    ],
+  "extDeps" : {
+    "OpenVDBWrapper" : "*"
+    },
+  "presetGUID" : "C163B694C1FD704C4E2470E07F92503D",
+  "code" : "require OpenVDBWrapper;\n\ndfgEntry {\n  result = this.isSample(ijk);\n}\n"
+  }

@@ -1,0 +1,32 @@
+// Created by kl2dfg (processFunction)
+{
+  "objectType" : "Func",
+  "metadata" : {
+    "uiTooltip" : "Returns a local SpatialQuery object for issuing one or multiple queries.\nThe returned SpatialQuery object must be locally released by calling\n:kl-ref:`SpatialQueryable.endSpatialQuery`, and should not be used afterward.\n\n\n Supported by VDBVolumes"
+    },
+  "title" : "BeginSpatialQuery",
+  "ports" : [
+    {
+      "objectType" : "Port",
+      "metadata" : {
+        "uiColor" : "{\n  \"r\" : 51,\n  \"g\" : 1,\n  \"b\" : 106\n  }"
+        },
+      "nodePortType" : "Out",
+      "name" : "this",
+      "execPortType" : "In",
+      "typeSpec" : "VDBVolumes"
+      },
+    {
+      "objectType" : "Port",
+      "nodePortType" : "In",
+      "name" : "result",
+      "execPortType" : "Out",
+      "typeSpec" : "SpatialQuery"
+      }
+    ],
+  "extDeps" : {
+    "OpenVDBGeometry" : "*"
+    },
+  "presetGUID" : "2EBECC1E22A1ED8B4C80E0574DD13A26",
+  "code" : "require OpenVDBGeometry;\n\ndfgEntry {\n  Ref<SpatialQuery> result_ref = this.beginSpatialQuery();\n  result = result_ref;\n}\n"
+  }

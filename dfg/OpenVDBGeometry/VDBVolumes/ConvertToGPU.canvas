@@ -1,0 +1,25 @@
+// Created by kl2dfg (processFunction)
+{
+  "objectType" : "Func",
+  "metadata" : {
+    "uiTooltip" : "\n\n Supported by VDBVolumes"
+    },
+  "title" : "ConvertToGPU",
+  "ports" : [
+    {
+      "objectType" : "Port",
+      "metadata" : {
+        "uiColor" : "{\n  \"r\" : 51,\n  \"g\" : 1,\n  \"b\" : 106\n  }"
+        },
+      "nodePortType" : "IO",
+      "name" : "this",
+      "execPortType" : "IO",
+      "typeSpec" : "VDBVolumes"
+      }
+    ],
+  "extDeps" : {
+    "OpenVDBGeometry" : "*"
+    },
+  "presetGUID" : "3CF34B2CDDA629D2C8541E744EF7F170",
+  "code" : "require OpenVDBGeometry;\n\ndfgEntry {\n  this.convertToGPU();\n}\n"
+  }

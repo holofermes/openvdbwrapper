@@ -1,0 +1,36 @@
+// Created by kl2dfg (processFunction)
+{
+  "objectType" : "Func",
+  "metadata" : {
+    "uiTooltip" : "\n\n Supported by BBox_d"
+    },
+  "title" : "WorldSpaceBBox",
+  "ports" : [
+    {
+      "objectType" : "Port",
+      "nodePortType" : "Out",
+      "name" : "grid",
+      "execPortType" : "In",
+      "typeSpec" : "FloatGrid"
+      },
+    {
+      "objectType" : "Port",
+      "nodePortType" : "Out",
+      "name" : "transform",
+      "execPortType" : "In",
+      "typeSpec" : "Transform"
+      },
+    {
+      "objectType" : "Port",
+      "nodePortType" : "In",
+      "name" : "result",
+      "execPortType" : "Out",
+      "typeSpec" : "BBox_d"
+      }
+    ],
+  "extDeps" : {
+    "OpenVDBWrapper" : "*"
+    },
+  "presetGUID" : "209844C7BEB59A0CA5B9BCD38BE7AC4A",
+  "code" : "require OpenVDBWrapper;\n\ndfgEntry {\n  Ref<FloatGrid> grid_ref = grid;\n  Ref<Transform> transform_ref = transform;\n  result = worldSpaceBBox(grid_ref, transform_ref);\n}\n"
+  }

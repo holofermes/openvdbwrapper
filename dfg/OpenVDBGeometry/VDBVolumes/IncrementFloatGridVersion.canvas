@@ -1,0 +1,25 @@
+// Created by kl2dfg (processFunction)
+{
+  "objectType" : "Func",
+  "metadata" : {
+    "uiTooltip" : "Helper for incrementing the version of the sizes attribute after value changes (see :ref:`gridAttributes`).\nSee :ref:`attributeversioning` for more information.\n\n Supported by VDBVolumes"
+    },
+  "title" : "IncrementFloatGridVersion",
+  "ports" : [
+    {
+      "objectType" : "Port",
+      "metadata" : {
+        "uiColor" : "{\n  \"r\" : 51,\n  \"g\" : 1,\n  \"b\" : 106\n  }"
+        },
+      "nodePortType" : "IO",
+      "name" : "this",
+      "execPortType" : "IO",
+      "typeSpec" : "VDBVolumes"
+      }
+    ],
+  "extDeps" : {
+    "OpenVDBGeometry" : "*"
+    },
+  "presetGUID" : "FDA93A0DBB780640EABD2F478F8002C0",
+  "code" : "require OpenVDBGeometry;\n\ndfgEntry {\n  this.incrementFloatGridVersion();\n}\n"
+  }

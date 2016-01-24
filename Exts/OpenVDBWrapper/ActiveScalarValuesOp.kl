@@ -1,0 +1,136 @@
+
+require Math;
+require OpenVDB;
+
+function Vec3(Vec3_d rhs){
+  this.x = Float32(rhs.x);
+  this.y = Float32(rhs.y);
+  this.z = Float32(rhs.z);
+}
+
+const Size maxVoxelPoints = 26000000;
+
+operator pointGeneratorAttribute<<<idx>>>(io Float32 values[], 
+                                          io Vec3 normals[],
+                                          Transform transform,
+                                          FloatConstAccessor accessors[],
+                                          Vec3 points[],
+                                          Float32 minValue,
+                                          Float32 maxValue,
+                                          Color colorMap[4],
+                                          UInt32 offset,
+                                          Float64 halfWidth,
+                                          Boolean isLevelSet,
+                                             )
+{
+  FloatConstAccessor accessor = accessors[getThreadIndex()];
+  Coord ijk;
+  Vec3_d pos, tmpNormal, normal(0.0, -1.0, 0.0);
+  Color color(0.9, 0.3, 0.3);
+  Float32 w = 0.0;
+  UInt32 voxelNum = 0;
+
+  Size index = idx + offset;
+
+  ijk = transform.worldToIndex(points[index]);
+  values[index] = accessor.getValue(ijk);
+  if (!isLevelSet)return;
+  if ((voxelNum % 2) == 0) {
+    tmpNormal = accessor.isGradient(ijk);
+    Float64 length = tmpNormal.length();
+    if (length > 1.0e-7) {
+      tmpNormal *= 1.0 / length;
+      normal = tmpNormal;
+    }
+  }
+  ++voxelNum;
+  normals[index] = normal;
+
+}
+
+operator pointGeneratorFloat<<<idx>>>(io Vec3 points[],
+                                   UInt32 indexMap[],
+                                   FloatLeafManager leafs,
+                                   Transform transform,
+                                   UInt64 voxelsPerLeaf,
+                                   UInt32 offset,
+                                   )
+{
+
+  UInt32 index = indexMap[idx] + offset;
+  FloatLeafNode node(leafs.leaf(idx));
+  UInt64 activeVoxels = node.onVoxelCount();
+  FloatLeafOnIter it = node.beginValueOn();
+
+  if (activeVoxels <= voxelsPerLeaf) {
+    for (; it.test(); it.next()) {
+
+      points[index] = transform.indexToWorld(it.getCoord());
+      ++index;
+    }
+
+  } else if (1 == voxelsPerLeaf) {
+
+    points[index] = transform.indexToWorld(it.getCoord());
+
+  } else {
+    Coord coords[];
+    coords.reserve(Size(activeVoxels));
+    for ( ; it.test(); it.next()) { coords.push(it.getCoord()); }
+
+    points[index] = transform.indexToWorld(coords[0]);
+    ++index;
+
+    points[index] = transform.indexToWorld(coords[Size(activeVoxels)-1]);
+    ++index;
+
+    UInt64 r = UInt64(floor(Float64(voxelsPerLeaf) / activeVoxels));
+    for (UInt64 i = 1, I = voxelsPerLeaf - 2; i < I; ++i) {
+        points[index] = transform.indexToWorld(coords[Size(i * r)]);
+        ++index;
+    }
+  }
+}
+operator pointGeneratorBoolean<<<idx>>>(io Vec3 points[],
+                                   UInt32 indexMap[],
+                                   BooleanLeafManager leafs,
+                                   Transform transform,
+                                   UInt64 voxelsPerLeaf,
+                                   UInt32 offset,
+                                   )
+{
+
+  UInt32 index = indexMap[idx] + offset;
+  BooleanLeafNode node(leafs.leaf(idx));
+  UInt64 activeVoxels = node.onVoxelCount();
+  BooleanLeafOnIter it = node.beginValueOn();
+
+  if (activeVoxels <= voxelsPerLeaf) {
+    for (; it.test(); it.next()) {
+
+      points[index] = transform.indexToWorld(it.getCoord());
+      ++index;
+    }
+
+  } else if (1 == voxelsPerLeaf) {
+
+    points[index] = transform.indexToWorld(it.getCoord());
+
+  } else {
+    Coord coords[];
+    coords.reserve(Size(activeVoxels));
+    for ( ; it.test(); it.next()) { coords.push(it.getCoord()); }
+
+    points[index] = transform.indexToWorld(coords[0]);
+    ++index;
+
+    points[index] = transform.indexToWorld(coords[Size(activeVoxels)-1]);
+    ++index;
+
+    UInt64 r = UInt64(floor(Float64(voxelsPerLeaf) / activeVoxels));
+    for (UInt64 i = 1, I = voxelsPerLeaf - 2; i < I; ++i) {
+        points[index] = transform.indexToWorld(coords[Size(i * r)]);
+        ++index;
+    }
+  }
+}

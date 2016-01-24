@@ -1,0 +1,61 @@
+// Created by kl2dfg (processDecomposeFunction)
+{
+  "objectType" : "Func",
+  "title" : "FloatGridAccelleration ->",
+  "ports" : [
+    {
+      "objectType" : "Port",
+      "nodePortType" : "Out",
+      "name" : "value",
+      "execPortType" : "In",
+      "typeSpec" : "FloatGridAccelleration"
+      },
+    {
+      "objectType" : "Port",
+      "nodePortType" : "In",
+      "name" : "parallel",
+      "execPortType" : "Out",
+      "typeSpec" : "Boolean"
+      },
+    {
+      "objectType" : "Port",
+      "nodePortType" : "In",
+      "name" : "accessor",
+      "execPortType" : "Out",
+      "typeSpec" : "FloatConstAccessor[]"
+      },
+    {
+      "objectType" : "Port",
+      "nodePortType" : "In",
+      "name" : "sampler",
+      "execPortType" : "Out",
+      "typeSpec" : "FloatGridSamplerNative[]"
+      },
+    {
+      "objectType" : "Port",
+      "nodePortType" : "In",
+      "name" : "primary",
+      "execPortType" : "Out",
+      "typeSpec" : "VolumeRayIntersector[]"
+      },
+    {
+      "objectType" : "Port",
+      "nodePortType" : "In",
+      "name" : "shadow",
+      "execPortType" : "Out",
+      "typeSpec" : "VolumeRayIntersector[]"
+      },
+    {
+      "objectType" : "Port",
+      "nodePortType" : "In",
+      "name" : "statsParent",
+      "execPortType" : "Out",
+      "typeSpec" : "Ref<StatisticSource>"
+      }
+    ],
+  "extDeps" : {
+    "OpenVDBGeometry" : "*"
+    },
+  "presetGUID" : "28753F29FAC3EF338B834B9AA7A7A353",
+  "code" : "require OpenVDBGeometry;\n\ndfgEntry {\n  parallel = value.parallel;\n  accessor = value.accessor;\n  sampler = value.sampler;\n  primary = value.primary;\n  shadow = value.shadow;\n  statsParent = value.statsParent;\n}\n"
+  }

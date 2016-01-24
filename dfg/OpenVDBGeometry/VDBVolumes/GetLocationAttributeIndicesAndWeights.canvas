@@ -1,0 +1,46 @@
+// Created by kl2dfg (processFunction)
+{
+  "objectType" : "Func",
+  "metadata" : {
+    "uiTooltip" : "For a GeometryLocation returned by this SpatialQueryable, returns the attribute indices and weights\nrequired to linearly interpolate attribute values. The GeometryLocation must be valid.\nSee :ref:`geometrylocationstructure` for more details.\n\n Supported by VDBVolumes"
+    },
+  "title" : "GetLocationAttributeIndicesAndWeights",
+  "ports" : [
+    {
+      "objectType" : "Port",
+      "metadata" : {
+        "uiColor" : "{\n  \"r\" : 51,\n  \"g\" : 1,\n  \"b\" : 106\n  }"
+        },
+      "nodePortType" : "Out",
+      "name" : "this",
+      "execPortType" : "In",
+      "typeSpec" : "VDBVolumes"
+      },
+    {
+      "objectType" : "Port",
+      "nodePortType" : "Out",
+      "name" : "location",
+      "execPortType" : "In",
+      "typeSpec" : "GeometryLocation"
+      },
+    {
+      "objectType" : "Port",
+      "nodePortType" : "IO",
+      "name" : "attributeIndices",
+      "execPortType" : "IO",
+      "typeSpec" : "LocalL16UInt32Array"
+      },
+    {
+      "objectType" : "Port",
+      "nodePortType" : "IO",
+      "name" : "weights",
+      "execPortType" : "IO",
+      "typeSpec" : "LocalL16ScalarArray"
+      }
+    ],
+  "extDeps" : {
+    "OpenVDBGeometry" : "*"
+    },
+  "presetGUID" : "DE4B2A3AFC62B8EAEE9C083CF4A43439",
+  "code" : "require OpenVDBGeometry;\n\ndfgEntry {\n  this.getLocationAttributeIndicesAndWeights(location, attributeIndices, weights);\n}\n"
+  }

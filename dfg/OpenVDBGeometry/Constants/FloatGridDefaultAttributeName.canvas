@@ -1,0 +1,19 @@
+// Created by kl2dfg (processConstant)
+{
+  "objectType" : "Func",
+  "title" : "FloatGridDefaultAttributeName",
+  "ports" : [
+    {
+      "objectType" : "Port",
+      "nodePortType" : "In",
+      "name" : "value",
+      "execPortType" : "Out",
+      "typeSpec" : "String"
+      }
+    ],
+  "extDeps" : {
+    "OpenVDBGeometry" : "*"
+    },
+  "presetGUID" : "39B91151FAD764B5AAB0D7B6A51E3727",
+  "code" : "require OpenVDBGeometry;\n\ndfgEntry {\n  value = FloatGridDefaultAttributeName;\n}\n"
+  }

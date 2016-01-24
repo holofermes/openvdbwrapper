@@ -1,0 +1,25 @@
+// Created by kl2dfg (processFunction)
+{
+  "objectType" : "Func",
+  "metadata" : {
+    "uiTooltip" : "Clears all data, including VDBVolumes and attributes. Version will be incremented.\n\n Supported by VDBVolumes"
+    },
+  "title" : "Clear",
+  "ports" : [
+    {
+      "objectType" : "Port",
+      "metadata" : {
+        "uiColor" : "{\n  \"r\" : 51,\n  \"g\" : 1,\n  \"b\" : 106\n  }"
+        },
+      "nodePortType" : "IO",
+      "name" : "this",
+      "execPortType" : "IO",
+      "typeSpec" : "VDBVolumes"
+      }
+    ],
+  "extDeps" : {
+    "OpenVDBGeometry" : "*"
+    },
+  "presetGUID" : "5A7BD9B26D6E7AA13AF1D0BAD11BB8CA",
+  "code" : "require OpenVDBGeometry;\n\ndfgEntry {\n  this.clear();\n}\n"
+  }

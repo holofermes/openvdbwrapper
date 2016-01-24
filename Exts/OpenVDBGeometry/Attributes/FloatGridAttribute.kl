@@ -1,0 +1,141 @@
+/*
+ *  Copyright 2010-2014 Fabric Software Inc. All rights reserved.
+ */
+
+/**
+  Specialized GeometryAttribute containing one FloatGrid per element.
+  Values can be accessed with the FloatGridAttribute.values array member, but its usage might be restricted by the owner Geometry.
+*/
+alias String GridName;
+object FloatGridAttribute : BaseAttribute {
+  /// Values array container
+  FloatGrid values[];
+  Size lut[GridName];
+
+  /// If true, FloatGridAttribute.linearCombine and FloatGridAttribute.getLinearCombination
+  /// will average the values. Else, an arbitrary source value will be used.
+  Boolean canInterpolate;
+};
+
+function StatisticRecord[] FloatGridAttribute.getStatistics() {
+  StatisticRecord stats[] = this.parent.getStatistics();
+  stats.push( StatisticRecord( Statistic_MemoryUsage, this.values.size()*4 ) );
+  return stats;
+}
+
+FloatGridAttribute.cloneMembersTo( io FloatGridAttribute that ) {
+  //The difference with default clone() is that new.parent.autoStat will point to 'new' (from constructor)
+  this.parent.cloneMembersTo(that);//Copies all but the values
+  that.copyFrom(this);
+}
+
+inline FloatGridAttribute.resize!(Size count) {
+  this.parent.resize(count);
+  this.values.resize(count);
+}
+
+inline Data FloatGridAttribute.data() {
+  return Data();/*this.values.data();*/
+}
+
+inline FloatGrid FloatGridAttribute.getGrid?( String name ) {
+  return this.values[this.lut[name]];
+}
+
+inline FloatGrid FloatGridAttribute.getGrid!( String name ) {
+  return this.values[this.lut[name]];
+}
+
+inline FloatGridAttribute.setGrid!( Size index, FloatGrid grid ) {
+  this.values[index] = grid;
+  this.lut[grid.getName()] = index;
+}
+
+
+inline FloatGridAttribute.copyValue!( Size sourceIndex, Size targetIndex ) {
+  ShallowCopy shallow;
+  FloatGrid grid(this.values[sourceIndex], shallow);
+  this.setGrid(targetIndex, grid);
+}
+
+inline FloatGridAttribute.copyValue!( Ref<Object> sourceAttr, Size sourceIndex, Size targetIndex ) {
+  ShallowCopy shallow;
+  Ref<FloatGridAttribute> source = sourceAttr;
+  // this.values[targetIndex].__construct(source.values[sourceIndex], shallow)
+  FloatGrid grid(source.values[sourceIndex], shallow);
+  this.setGrid(targetIndex, grid);
+}
+
+/** Returns a linear combination of source values. If FloatGridAttribute.canInterpolate is false, an arbitrary source value will be returned.
+    \param sourceIndices The array of source indices
+    \param sourceWeights The array of source weights, which need to correspond to each sourceIndices. Normally the sum of the weights should be 1.0
+*/
+inline FloatGrid FloatGridAttribute.getLinearCombination( LocalL16UInt32Array sourceIndices, LocalL16ScalarArray sourceWeights ) {
+ // if(sourceIndices.size())
+  return this.values[sourceIndices.get(0)];
+  // return 0;
+}
+
+inline FloatGridAttribute.linearCombine!( Ref<Object> sourceAttr, LocalL16UInt32Array sourceIndices, LocalL16ScalarArray sourceWeights, Size targetIndex ) {
+  Ref<FloatGridAttribute> source = sourceAttr;
+  this.setGrid(targetIndex, source.getLinearCombination( sourceIndices, sourceWeights ));
+}
+
+inline FloatGridAttribute.copyFrom!( Ref<Object> otherAttr ) {
+  this.parent.copyFrom( otherAttr );
+  Ref<FloatGridAttribute> other = otherAttr;
+  // other.values.copyTo(this.values); gpu friendly? http://documentation.fabric-engine.com/FabricEngine/latest/HTML/GPUCompute/gpupg.html?highlight=copyto
+
+  // Copy in place to avoid mallocs
+  Size size = other.values.size();
+  ShallowCopy shallow;
+  for( Size i = 0; i < size; ++i ){
+    FloatGrid grid(other.values[i], shallow);
+    this.setGrid(i, grid);
+  }
+}
+
+
+inline FloatGridAttribute.setFromScalar!( Size index, LocalL16ScalarArray value ) {
+  this.setGrid(index, FloatGrid(value.get(0)));
+}
+
+inline Size FloatGridAttribute.getScalarValueSize() {
+  return 1;
+}
+
+inline Boolean FloatGridAttribute.equalValues( Size index1, Size index2 ) {
+  return this.values[index1] == this.values[index2];
+}
+
+function String FloatGridAttribute.valueDesc( Size index ) {
+  String desc;
+  this.values[index].print(desc);
+  return desc;
+}
+
+require Util;
+function String FloatGridAttribute.unitTestPrint( Size index ) {
+  return this.valueDesc(index);
+}
+
+function String FloatGridAttribute.getDesc() {
+  String desc;
+  for (Size i = 0; i < this.values.size(); i++) {
+      desc += this.values[i].getDesc();
+    }
+  return desc;
+}
+
+/// If it exists, returns the attribute of that name, else creates it.
+function Ref<FloatGridAttribute> GeometryAttributes.getOrCreateFloatGridAttribute!( String name ) {
+  Ref<GeometryAttribute> attr = this.getAttribute( name, FloatGridAttribute );
+  if( attr ){
+    return attr;
+  }
+
+  FloatGridAttribute newAttr = FloatGridAttribute();
+  newAttr.resize(1);
+  newAttr._attachToContainer( name, this );
+  return newAttr;
+}

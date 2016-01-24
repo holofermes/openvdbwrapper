@@ -1,0 +1,29 @@
+// Created by kl2dfg (processFunction)
+{
+  "objectType" : "Func",
+  "metadata" : {
+    "uiTooltip" : "Returns a raw pointer to contiguous attribute data, if applicable, and an uninitialized Data otherwise.\n\n Supported by FloatGridAttribute"
+    },
+  "title" : "Data",
+  "ports" : [
+    {
+      "objectType" : "Port",
+      "nodePortType" : "Out",
+      "name" : "this",
+      "execPortType" : "In",
+      "typeSpec" : "FloatGridAttribute"
+      },
+    {
+      "objectType" : "Port",
+      "nodePortType" : "In",
+      "name" : "result",
+      "execPortType" : "Out",
+      "typeSpec" : "Data"
+      }
+    ],
+  "extDeps" : {
+    "OpenVDBGeometry" : "*"
+    },
+  "presetGUID" : "FA0C29A5E3DB7A067ACC38888F391D24",
+  "code" : "require OpenVDBGeometry;\n\ndfgEntry {\n  result = this.data();\n}\n"
+  }

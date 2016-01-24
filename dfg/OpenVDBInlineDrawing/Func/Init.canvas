@@ -1,0 +1,29 @@
+// Created by kl2dfg (processFunction)
+{
+  "objectType" : "Func",
+  "metadata" : {
+    "uiTooltip" : "\n\n Supported by OGLFloatGridVertexSS,OGLVDBVolumesBBox"
+    },
+  "title" : "Init",
+  "ports" : [
+    {
+      "objectType" : "Port",
+      "nodePortType" : "IO",
+      "name" : "this",
+      "execPortType" : "IO",
+      "typeSpec" : "$TYPE$"
+      },
+    {
+      "objectType" : "Port",
+      "nodePortType" : "Out",
+      "name" : "name",
+      "execPortType" : "In",
+      "typeSpec" : "String"
+      }
+    ],
+  "extDeps" : {
+    "OpenVDBInlineDrawing" : "*"
+    },
+  "presetGUID" : "18337B1E61A7D72F9BAFD6FCEDE361B5",
+  "code" : "require OpenVDBInlineDrawing;\n\ndfgEntry {\n  this.init(name);\n}\n"
+  }

@@ -1,0 +1,134 @@
+require OpenVDB;
+
+struct BoxSampler{};
+
+struct FloatGridSampler{
+    FloatConstAccessor  mAccessor;
+    Transform mTransform;
+    BoxSampler mSampler;
+};
+
+
+/// @param acc  a ValueAccessor to be sampled
+/// @param transform is used when sampling world space locations.
+function FloatGridSampler(FloatConstAccessor acc, Transform transform){
+    this.mAccessor = acc;
+    this.mTransform = transform;
+}
+
+function Transform FloatGridSampler.transform?(){
+    return this.mTransform;
+}
+
+/// @brief Sample a point in index space in the grid.
+/// @param x Fractional x-coordinate of point in index-coordinates of grid
+/// @param y Fractional y-coordinate of point in index-coordinates of grid
+/// @param z Fractional z-coordinate of point in index-coordinates of grid
+inline Float32 FloatGridSampler.sampleVoxel?(Float32 x, Float32 y, Float32 z)
+  {
+  return this.isSample(Vec3_d(x,y,z));
+  }
+
+/// @brief Sample value in integer index space
+/// @param i Integer x-coordinate in index space
+/// @param j Integer y-coordinate in index space
+/// @param k Integer x-coordinate in index space
+inline Float32 FloatGridSampler.sampleVoxel?(SInt32 i,
+                                             SInt32 j,
+                                             SInt32 k)
+{
+    return this.isSample(Coord(i,j,k));
+}
+
+/// @brief Sample value in integer index space
+/// @param ijk the location in index space
+inline Float32 FloatGridSampler.isSample?(Coord ijk)
+{
+  return this.mAccessor.getValue(ijk);
+}
+
+/// @brief Sample in fractional index space
+/// @param ispoint the location in index space
+inline Float32 FloatGridSampler.isSample?(Vec3_d ispoint)
+{
+  Float32 result = 0.0;//zeroVal<Float32>();
+  this.mSampler.sample(this.mAccessor, ispoint, result);
+  return result;
+}
+
+/// @brief Sample in world space
+/// @param wspoint the location in world space
+inline Float32 FloatGridSampler.wsSample?(Vec3 wspoint)
+{
+  Float32 result = 0.0;//zeroVal<Float32>();
+  this.mSampler.sample(this.mAccessor, this.mTransform.worldToIndex(wspoint), result);
+  return result;
+}
+
+
+/// @brief Sample in world space
+/// @param wspoint the location in world space
+inline Float32 FloatGridSampler.wsSample?(Vec3_d wspoint)
+{
+  Float32 result = 0.0;//zeroVal<Float32>();
+  this.mSampler.sample(this.mAccessor, this.mTransform.worldToIndex(wspoint), result);
+  return result;
+}
+
+
+inline Float32 BoxSampler.trilinearInterpolation?(Float32 data[2][2][2], Vec3_d uvw)
+{
+  // Trilinear interpolation:
+  // The eight surrounding latice values are used to construct the result. \n
+  // result(x,y,z) =
+  //     v000 (1-x)(1-y)(1-z) + v001 (1-x)(1-y)z + v010 (1-x)y(1-z) + v011 (1-x)yz
+  //   + v100 x(1-y)(1-z)     + v101 x(1-y)z     + v110 xy(1-z)     + v111 xyz
+
+  Float32 resultA, resultB;
+
+  resultA = data[0][0][0] + Float32((data[0][0][1] - data[0][0][0]) * uvw.z);
+  resultB = data[0][1][0] + Float32((data[0][1][1] - data[0][1][0]) * uvw.z);
+  Float32 result1 = resultA + Float32((resultB-resultA) * uvw.y);
+
+  resultA = data[1][0][0] + Float32((data[1][0][1] - data[1][0][0]) * uvw.z);
+  resultB = data[1][1][0] + Float32((data[1][1][1] - data[1][1][0]) * uvw.z);
+  Float32 result2 = resultA + Float32((resultB - resultA) * uvw.y);
+
+  return result1 + Float32(uvw.x * (result2 - result1));
+}
+
+
+//removed hasActiveValues, and replaced probeValue with getValue
+inline BoxSampler.sample?(FloatConstAccessor inAcc, Vec3_d inCoord, io Float32 result)
+{
+
+  Vec3_d inIdx = Vec3_d(round(inCoord.x),round(inCoord.y),round(inCoord.z));
+
+  Vec3_d uvw = inCoord - inIdx;
+
+  // Retrieve the values of the eight voxels surrounding the
+  // fractional source coordinates.
+  Float32 data[2][2][2];
+
+  Coord ijk(inIdx);
+
+  data[0][0][0] = inAcc.getValue(ijk); // i, j, k
+  ijk.k += 1;
+  data[0][0][1] = inAcc.getValue(ijk);  // i, j, k + 1
+  ijk.j += 1;
+  data[0][1][1] = inAcc.getValue(ijk); // i, j+1, k + 1
+  ijk.k = inIdx.y;
+  data[0][1][0] = inAcc.getValue(ijk);  // i, j+1, k
+  ijk.i += 1;
+  ijk.j = inIdx.y;
+  data[1][0][0] = inAcc.getValue(ijk); // i+1, j, k
+  ijk.k += 1;
+  data[1][0][1] = inAcc.getValue(ijk); // i+1, j, k + 1
+  ijk.j += 1;
+  data[1][1][1] = inAcc.getValue(ijk); // i+1, j+1, k + 1
+  ijk.k = inIdx.z;
+  data[1][1][0] = inAcc.getValue(ijk); // i+1, j+1, k
+
+  result = this.trilinearInterpolation(data, uvw);
+}
+

@@ -1,0 +1,40 @@
+// Created by kl2dfg (processDecomposeFunction)
+{
+  "objectType" : "Func",
+  "title" : "FloatGridSampler ->",
+  "ports" : [
+    {
+      "objectType" : "Port",
+      "nodePortType" : "Out",
+      "name" : "value",
+      "execPortType" : "In",
+      "typeSpec" : "FloatGridSampler"
+      },
+    {
+      "objectType" : "Port",
+      "nodePortType" : "In",
+      "name" : "mAccessor",
+      "execPortType" : "Out",
+      "typeSpec" : "FloatConstAccessor"
+      },
+    {
+      "objectType" : "Port",
+      "nodePortType" : "In",
+      "name" : "mTransform",
+      "execPortType" : "Out",
+      "typeSpec" : "Transform"
+      },
+    {
+      "objectType" : "Port",
+      "nodePortType" : "In",
+      "name" : "mSampler",
+      "execPortType" : "Out",
+      "typeSpec" : "BoxSampler"
+      }
+    ],
+  "extDeps" : {
+    "OpenVDBWrapper" : "*"
+    },
+  "presetGUID" : "927CF4FF51AD382DD9A7AF0C6544FB43",
+  "code" : "require OpenVDBWrapper;\n\ndfgEntry {\n  mAccessor = value.mAccessor;\n  mTransform = value.mTransform;\n  mSampler = value.mSampler;\n}\n"
+  }

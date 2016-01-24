@@ -1,0 +1,22 @@
+// Created by kl2dfg (processFunction)
+{
+  "objectType" : "Func",
+  "metadata" : {
+    "uiTooltip" : "default constructor\n\n Supported by OGLVDBVolumesShapeAdaptor"
+    },
+  "title" : "OGLVDBVolumesShapeAdaptor",
+  "ports" : [
+    {
+      "objectType" : "Port",
+      "nodePortType" : "In",
+      "name" : "result",
+      "execPortType" : "Out",
+      "typeSpec" : "OGLVDBVolumesShapeAdaptor"
+      }
+    ],
+  "extDeps" : {
+    "OpenVDBInlineDrawing" : "*"
+    },
+  "presetGUID" : "1DB90FCA715D2DB3562C175C23E2274B",
+  "code" : "require OpenVDBInlineDrawing;\n\ndfgEntry {\n  result = OGLVDBVolumesShapeAdaptor();\n}\n"
+  }

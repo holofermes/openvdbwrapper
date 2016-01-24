@@ -1,0 +1,262 @@
+require Math, FabricStatistics, Geometry, OpenVDB;
+
+object VDBVolumes : BaseGeometry, Geometry, SpatialQueryable {
+  Ref<FloatGridAttribute> gridAttributes;
+    /// \internal attribute cache for fast access
+
+  Object spatialAccelerationCache;
+};
+
+/// \internal initialize members
+inline VDBVolumes._init!(String debugName) {
+  this.parent._init(debugName);
+  this.gridAttributes = this.getOrCreateFloatGridAttribute();
+  this.attributes.registerOwner(this);
+
+}
+
+function VDBVolumes() {
+  this._init("VDBVolumes");
+}
+
+function VDBVolumes(String debugName) {
+  this._init(debugName);
+}
+
+const String FloatGridDefaultAttributeName = "density";
+
+function Ref<FloatGridAttribute> VDBVolumes.getOrCreateFloatGridAttribute!(){
+  return this.attributes.getOrCreateFloatGridAttribute(FloatGridDefaultAttributeName);
+}
+
+
+/// \internal Increment mesh structure version, which includes attribute sharing version
+inline VDBVolumes._incrementStructureVersion!() {
+  ++this.structureVersion;
+}
+
+// /// \internal Copy the points & polygons structure from another mesh, including attribute sharing information
+// function VDBVolumes._copyStructure!( VDBVolumes src ) {
+//   this.topology._copyStructure( src.topology );
+//   this.resizeAttributesInternal(src.attributes.size());
+//   this.structureVersion += src.structureVersion + 1;
+//   this._incrementStructureVersion();
+// }
+
+
+/// Returns the debug name used when constructing the geometry.
+function String VDBVolumes.getDebugName() {
+  return this.debugName;
+}
+
+/// Returns the version of the geometry including attribute values
+inline UInt32 VDBVolumes.getVersion() {
+  return this.parent.getVersion();
+}
+
+/// Returns the version of the geometry structure including the the attribute set (but not attribute values).
+inline UInt32 VDBVolumes.getStructureVersion() {
+  return this.parent.getStructureVersion();
+}
+
+
+/// Returns the metaData container for this Geometry.
+function Ref<ThreadsafeMetaDataContainer> VDBVolumes.getMetaData() {
+  return this.metaData;
+}
+
+/// Returns the memory location id. CPU = 0, GPU = 1, VSM = 2;
+inline UInt32 VDBVolumes.getMemType( ) {
+  return 0; // The VDBVolumes Geomtry has no memory to move to the GPU.
+}
+
+inline VDBVolumes.convertToGPU!( ) {
+}
+
+inline VDBVolumes.convertToCPU!( ) {
+}
+
+
+/// Copies the content from the source VDBVolumes.
+function VDBVolumes.copy!( VDBVolumes src ) {
+  this.attributes.copy(src.attributes);
+  if( src.gridAttributes )
+    this.gridAttributes = this.attributes.getAttribute( src.gridAttributes.getName(), FloatGridAttribute );
+}
+
+/// Copies the content from the source Geometry.
+function VDBVolumes.copy!( Geometry src ) {
+  VDBVolumes srcVDBVolumes = src;
+  if(!srcVDBVolumes)
+    throw("VDBVolumes Cannot copy data from a non-VDBVolumes. Src Geometry is a :"+src.type());
+  this.copy(srcVDBVolumes);
+}
+
+VDBVolumes.cloneMembersTo(io VDBVolumes that) {
+  //The difference with default clone() is that new.parent.autoStat will point to 'new' (from constructor)
+  that.copy( VDBVolumes(this) );
+}
+
+/// Clears all data, including VDBVolumes and attributes. Version will be incremented.
+function VDBVolumes.clear!() {
+  this.parent.clear();
+  Ref<FloatGridAttribute> nullGridAttr = null;
+  this.gridAttributes = nullGridAttr;
+}
+
+inline Ref<GeometryAttributes> VDBVolumes.getAttributes() { return this.attributes; }
+
+/// Adds N VDBVolumes and returns the index of the first of the consecutive indices.
+inline Size VDBVolumes.addVDBVolumes!( Size count ) {
+  this._incrementStructureVersion();
+  Size prevSize = this.attributes.size();
+  this.attributes.resize( prevSize + count );
+  return prevSize;
+}
+
+/// Changes the number of VDBVolumes, adding or truncating the last ones.
+inline VDBVolumes.resize!( Size newSize ) {
+  if( newSize != this.attributes.size() ) {
+    this._incrementStructureVersion();
+    this.attributes.resize( newSize );
+  }
+}
+
+
+inline VDBVolumes.setVizPoints!( Size count ) {
+  this._incrementStructureVersion();
+  this.attributes.positionsAttribute.resize( 0 );
+  this.attributes.positionsAttribute.resize( count );
+  this.incrementPositionsVersion();
+}
+
+
+/// Returns the number of VDBVolumes.
+inline Size VDBVolumes.size() {
+  return this.attributes.size();
+}
+
+/// Returns the number of VDBVolumes.
+inline Size VDBVolumes.voxelCount() {
+  Size count = this.attributes.size();
+  if (count == 0)
+    return count;
+  UInt64 activeVoxelCount = 0;
+  for (Size i = 0; i < count; i++) {
+    Ref<FloatGrid> grid = this.getFloatGrid(i);
+    activeVoxelCount += grid.activeVoxelCount();
+  }
+  return Size(activeVoxelCount);
+}
+
+/// Returns the number of VDBVolumes.
+inline Size VDBVolumes.gridCount() {
+  // report("gotting grid count from VDBVolumes");
+  // report(this.gridAttributes.size());
+  return this.gridAttributes.size();
+  // return 1;
+  // return this.gridAttributes.size();
+}
+
+function String VDBVolumes.getDesc() {
+  return this.gridAttributes.getDesc();
+}
+
+/// Returns the number of VDBVolumes.
+inline Size VDBVolumes.pointVizCount() {
+  return this.attributes.positionsAttribute.size();
+}
+
+/// Defines the attribute that will be used for 'setFloatGrid' and 'getFloatGrid' (see :ref:`gridAttributes`)
+function VDBVolumes.setFloatGridAttribute!( Ref<FloatGridAttribute> gridAttributes ) {
+  if( Boolean(gridAttributes) && !this.attributes.hasAttribute( gridAttributes ) )
+    throw("VDBVolumes.setFloatGridAttribute: FloatGridAttribute attribute not part of VDBVolumes' attributes");
+  if( this.gridAttributes !== gridAttributes ) {
+    this.gridAttributes = gridAttributes;
+    this._incrementStructureVersion();
+  }
+}
+
+// /// Returns the position of a point.
+// inline Vec3 VDBVolumes.getPosition( Size point ) {
+//   return this.attributes.positionsAttribute.getPosition( point );
+// }
+
+// /// Sets the positions of a point.
+// /// \note Once positions have been set, call :kl-ref:`VDBVolumes.incrementPositionsVersion` (see :ref:`attributeversioning`)
+// inline VDBVolumes.setPosition!( Size point, Vec3 position ) {
+//   this.attributes.positionsAttribute.setPosition( point, position );
+// }
+
+/// Helper for incrementing the version of the positions attribute after value changes.
+/// See :ref:`attributeversioning` for more information.
+inline VDBVolumes.incrementPositionsVersion!() {
+  this.attributes.positionsAttribute.incrementVersion();
+}
+
+/// Returns the size of a point (see :ref:`gridAttributes`)
+inline Vec3 VDBVolumes.getPositionAtIndex?( Size index ) {
+  Ref<FloatGrid> grid =  this.gridAttributes.values[ index ];
+  return grid.transform.flatIndexToWorld(index);
+}
+/// Returns the size of a point (see :ref:`gridAttributes`)
+inline Ref<FloatGrid> VDBVolumes.getFloatGrid?( Size index ) {
+  if( this.gridAttributes )
+    return this.gridAttributes.values[ index ];
+  else
+    return null;
+}
+
+/// Sets the grid at index
+inline VDBVolumes.setFloatGrid!( Size index, FloatGrid grid ) {
+  this.gridAttributes.setGrid(index, grid);
+}
+
+/// Helper for incrementing the version of the sizes attribute after value changes (see :ref:`gridAttributes`).
+/// See :ref:`attributeversioning` for more information.
+inline VDBVolumes.incrementFloatGridVersion!() {
+  this.gridAttributes.incrementVersion();
+}
+
+/// \internal
+function StatisticRecord[] VDBVolumes.getStatistics() {
+  StatisticRecord stats[] = this.parent.getStatistics();
+  stats.push( StatisticRecord( "VDBVolumes", this.gridAttributes.size() ) );
+  return stats;
+}
+
+/// Geometry interface: returns the number of VDBVolumes
+function Size VDBVolumes.elementCount() {
+  return this.gridCount();
+}
+
+
+inline LocalBoundingVolume.bBoxAddBBox_d!(BBox_d bboxd){
+  this.bBoxAddBBox( Vec3(Float32(bboxd.min.x), Float32(bboxd.min.y), Float32(bboxd.min.z)), Vec3(Float32(bboxd.max.x), Float32(bboxd.max.y), Float32(bboxd.max.z)) );
+}
+
+function LocalBoundingVolume VDBVolumes.getBoundingVolume() {
+  LocalBoundingVolume bBox = this.parent.getBoundingVolume();
+  // for( UInt32 i = 0; i < this.attributes.size(); ++i ) {
+  Ref<FloatGrid> grid = this.getFloatGrid(0);
+  bBox.bBoxAddBBox_d(grid.worldSpaceBBox());
+  // }
+
+  return bBox;
+}
+
+function LocalBoundingVolume VDBVolumes.getElementBoundingVolume(Size index) {
+  return this.getBoundingVolume();
+}
+
+/// Returns a String description of the VDBVolumes.
+/// \param withAttributes include the attribute values in the desc.
+/// \prarm useUnitTestPrint use the unitTestPrint method to ensure that the values are consistent accross platforms(used in unit testing).
+function String VDBVolumes.getDesc?( Boolean withAttributes, Boolean useUnitTestPrint ) {
+  String desc;
+  desc += "VDBVolumes: "+ this.debugName + " gridCount: " + this.gridCount() + " nbAttributeVectors: " + this.attributes.attributeCount() + '\n';
+  if( withAttributes )
+    desc += this.attributes.getDesc(useUnitTestPrint) + '\n';
+
+  return desc;
+}

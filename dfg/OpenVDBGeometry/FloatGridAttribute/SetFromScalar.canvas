@@ -1,0 +1,36 @@
+// Created by kl2dfg (processFunction)
+{
+  "objectType" : "Func",
+  "metadata" : {
+    "uiTooltip" : "If applicable, sets an attribute value from an array of Scalars. This array must have a size of :kl-ref:`GeometryAttribute.getScalarValueSize` .\n\n Supported by FloatGridAttribute"
+    },
+  "title" : "SetFromScalar",
+  "ports" : [
+    {
+      "objectType" : "Port",
+      "nodePortType" : "IO",
+      "name" : "this",
+      "execPortType" : "IO",
+      "typeSpec" : "FloatGridAttribute"
+      },
+    {
+      "objectType" : "Port",
+      "nodePortType" : "Out",
+      "name" : "index",
+      "execPortType" : "In",
+      "typeSpec" : "Size"
+      },
+    {
+      "objectType" : "Port",
+      "nodePortType" : "Out",
+      "name" : "value",
+      "execPortType" : "In",
+      "typeSpec" : "LocalL16ScalarArray"
+      }
+    ],
+  "extDeps" : {
+    "OpenVDBGeometry" : "*"
+    },
+  "presetGUID" : "22E50B46F98C71FA1A96493F9321FC98",
+  "code" : "require OpenVDBGeometry;\n\ndfgEntry {\n  this.setFromScalar(index, value);\n}\n"
+  }

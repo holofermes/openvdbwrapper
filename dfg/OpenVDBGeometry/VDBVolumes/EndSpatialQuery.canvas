@@ -1,0 +1,32 @@
+// Created by kl2dfg (processFunction)
+{
+  "objectType" : "Func",
+  "metadata" : {
+    "uiTooltip" : "Releases (recycles) a query object previously obtained by a call to :kl-ref:`SpatialQueryable.beginSpatialQuery` .\n\n\n Supported by VDBVolumes"
+    },
+  "title" : "EndSpatialQuery",
+  "ports" : [
+    {
+      "objectType" : "Port",
+      "metadata" : {
+        "uiColor" : "{\n  \"r\" : 51,\n  \"g\" : 1,\n  \"b\" : 106\n  }"
+        },
+      "nodePortType" : "Out",
+      "name" : "this",
+      "execPortType" : "In",
+      "typeSpec" : "VDBVolumes"
+      },
+    {
+      "objectType" : "Port",
+      "nodePortType" : "Out",
+      "name" : "query",
+      "execPortType" : "In",
+      "typeSpec" : "SpatialQuery"
+      }
+    ],
+  "extDeps" : {
+    "OpenVDBGeometry" : "*"
+    },
+  "presetGUID" : "29A8A7BA7D5E9417A5D887D4A357E6E1",
+  "code" : "require OpenVDBGeometry;\n\ndfgEntry {\n  Ref<SpatialQuery> query_ref = query;\n  this.endSpatialQuery(query_ref);\n}\n"
+  }

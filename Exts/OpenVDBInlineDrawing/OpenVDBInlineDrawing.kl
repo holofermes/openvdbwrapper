@@ -1,0 +1,18 @@
+require Points;
+require InlineDrawing;
+require OpenVDBWrapper;
+
+function drawInlineVDB(io Points points, String shapeName)
+{
+  InlineDrawing draw = OGLInlineDrawing_GetInstance();
+  InlineShader shader = draw.registerShader(OGLFloatGridVertexSS());
+  InlineMaterial mat = shader.getOrCreateMaterial('vdb_fixed_point_size');
+  mat.setUniform('u_ambientColor', Color(1.0, 1.0, 1.0));
+  mat.setUniform('u_light0Position', Vec3(0.0, 10000.0, 0.0));
+
+  InlineShape shape = draw.getShape(shapeName);
+  if(shape == null)
+    shape = draw.registerShape(InlinePointsShape(shapeName, points));
+
+  mat.addInstance(SimpleInlineInstance(shapeName, draw.getRoot(), shape));
+}

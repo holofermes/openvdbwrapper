@@ -1,0 +1,29 @@
+// Created by kl2dfg (processFunction)
+{
+  "objectType" : "Func",
+  "metadata" : {
+    "uiTooltip" : "\n\n Supported by FloatGridAccelleration"
+    },
+  "title" : "Prepare",
+  "ports" : [
+    {
+      "objectType" : "Port",
+      "nodePortType" : "IO",
+      "name" : "this",
+      "execPortType" : "IO",
+      "typeSpec" : "FloatGridAccelleration"
+      },
+    {
+      "objectType" : "Port",
+      "nodePortType" : "Out",
+      "name" : "approximateNumberOfQueries",
+      "execPortType" : "In",
+      "typeSpec" : "Size"
+      }
+    ],
+  "extDeps" : {
+    "OpenVDBGeometry" : "*"
+    },
+  "presetGUID" : "CA0CEF0E4E384F642CF373F4B090EFF3",
+  "code" : "require OpenVDBGeometry;\n\ndfgEntry {\n  this.prepare(approximateNumberOfQueries);\n}\n"
+  }

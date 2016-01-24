@@ -1,0 +1,19 @@
+// Created by kl2dfg (processConstant)
+{
+  "objectType" : "Func",
+  "title" : "MaxVoxelPoints",
+  "ports" : [
+    {
+      "objectType" : "Port",
+      "nodePortType" : "In",
+      "name" : "value",
+      "execPortType" : "Out",
+      "typeSpec" : "Size"
+      }
+    ],
+  "extDeps" : {
+    "OpenVDBWrapper" : "*"
+    },
+  "presetGUID" : "D1A686D9B50B51F3A287F601E34ADD28",
+  "code" : "require OpenVDBWrapper;\n\ndfgEntry {\n  value = maxVoxelPoints;\n}\n"
+  }

@@ -1,0 +1,43 @@
+// Created by kl2dfg (processFunction)
+{
+  "objectType" : "Func",
+  "metadata" : {
+    "uiTooltip" : "Returns a linear combination of source values. If FloatGridAttribute.canInterpolate is false, an arbitrary source value will be returned.\n\nif(sourceIndices.size())\nreturn 0;\n\n Supported by FloatGridAttribute"
+    },
+  "title" : "GetLinearCombination",
+  "ports" : [
+    {
+      "objectType" : "Port",
+      "nodePortType" : "Out",
+      "name" : "this",
+      "execPortType" : "In",
+      "typeSpec" : "FloatGridAttribute"
+      },
+    {
+      "objectType" : "Port",
+      "nodePortType" : "Out",
+      "name" : "sourceIndices",
+      "execPortType" : "In",
+      "typeSpec" : "LocalL16UInt32Array"
+      },
+    {
+      "objectType" : "Port",
+      "nodePortType" : "Out",
+      "name" : "sourceWeights",
+      "execPortType" : "In",
+      "typeSpec" : "LocalL16ScalarArray"
+      },
+    {
+      "objectType" : "Port",
+      "nodePortType" : "In",
+      "name" : "result",
+      "execPortType" : "Out",
+      "typeSpec" : "FloatGrid"
+      }
+    ],
+  "extDeps" : {
+    "OpenVDBGeometry" : "*"
+    },
+  "presetGUID" : "76A85BE39FAC8798877955E1D27A219C",
+  "code" : "require OpenVDBGeometry;\n\ndfgEntry {\n  result = this.getLinearCombination(sourceIndices, sourceWeights);\n}\n"
+  }

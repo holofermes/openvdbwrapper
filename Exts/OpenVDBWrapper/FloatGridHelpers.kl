@@ -1,0 +1,88 @@
+
+function BBox_d worldSpaceBBox(Ref<FloatGrid> grid, Ref<Transform> transform){
+    CoordBBox bbox = grid.evalActiveVoxelBoundingBox();
+    Vec3_d pMin = Vec3_d(Vec3_d(SCALAR_INFINITE));
+    Vec3_d pMax = -pMin;
+
+    Coord min = bbox.min;
+    Coord max = bbox.max;
+    Coord ijk;
+
+    // corner 1
+    Vec3_d ptn = transform.indexToWorld(min);
+    for (Size i = 0; i < 3; ++i) {
+        if (ptn.component(i) < pMin.component(i)) pMin.setComponent(i, ptn.component(i));
+        if (ptn.component(i) > pMax.component(i)) pMax.setComponent(i, ptn.component(i));
+    }
+
+    // corner 2
+    ijk.i = min.i;
+    ijk.j = min.j;
+    ijk.k = max.k;
+    ptn = transform.indexToWorld(ijk);
+    for (Size i = 0; i < 3; ++i) {
+        if (ptn.component(i) < pMin.component(i)) pMin.setComponent(i, ptn.component(i));
+        if (ptn.component(i) > pMax.component(i)) pMax.setComponent(i, ptn.component(i));
+    }
+
+    // corner 3
+    ijk.i = max.i;
+    ijk.j = min.j;
+    ijk.k = max.k;
+    ptn = transform.indexToWorld(ijk);
+    for (Size i = 0; i < 3; ++i) {
+        if (ptn.component(i) < pMin.component(i)) pMin.setComponent(i, ptn.component(i));
+        if (ptn.component(i) > pMax.component(i)) pMax.setComponent(i, ptn.component(i));
+    }
+
+    // corner 4
+    ijk.i = max.i;
+    ijk.j = min.j;
+    ijk.k = min.k;
+    ptn = transform.indexToWorld(ijk);
+    for (Size i = 0; i < 3; ++i) {
+        if (ptn.component(i) < pMin.component(i)) pMin.setComponent(i, ptn.component(i));
+        if (ptn.component(i) > pMax.component(i)) pMax.setComponent(i, ptn.component(i));
+    }
+
+    // corner 5
+    ijk.i = min.i;
+    ijk.j = max.j;
+    ijk.k = min.k;
+    ptn = transform.indexToWorld(ijk);
+    for (Size i = 0; i < 3; ++i) {
+        if (ptn.component(i) < pMin.component(i)) pMin.setComponent(i, ptn.component(i));
+        if (ptn.component(i) > pMax.component(i)) pMax.setComponent(i, ptn.component(i));
+    }
+
+    // corner 6
+    ijk.i = min.i;
+    ijk.j = max.j;
+    ijk.k = max.k;
+    ptn = transform.indexToWorld(ijk);
+    for (Size i = 0; i < 3; ++i) {
+        if (ptn.component(i) < pMin.component(i)) pMin.setComponent(i, ptn.component(i));
+        if (ptn.component(i) > pMax.component(i)) pMax.setComponent(i, ptn.component(i));
+    }
+
+
+    // corner 7
+    ptn = transform.indexToWorld(max);
+    for (Size i = 0; i < 3; ++i) {
+        if (ptn.component(i) < pMin.component(i)) pMin.setComponent(i, ptn.component(i));
+        if (ptn.component(i) > pMax.component(i)) pMax.setComponent(i, ptn.component(i));
+    }
+
+    // corner 8
+    ijk.i = max.i;
+    ijk.j = max.j;
+    ijk.k = min.k;
+    ptn = transform.indexToWorld(ijk);
+    for (Size i = 0; i < 3; ++i) {
+        if (ptn.component(i) < pMin.component(i)) pMin.setComponent(i, ptn.component(i));
+        if (ptn.component(i) > pMax.component(i)) pMax.setComponent(i, ptn.component(i));
+    }
+
+    return BBox_d(pMin, pMax);
+}
+

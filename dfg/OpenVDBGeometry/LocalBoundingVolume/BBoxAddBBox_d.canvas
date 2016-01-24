@@ -1,0 +1,30 @@
+// Created by kl2dfg (processFunction)
+{
+  "objectType" : "Func",
+  "metadata" : {
+    "uiDocUrl" : "http://docs.fabric-engine.com/FabricEngine/2.0.0/HTML/KLExtensionsGuide/Geometry/LocalBoundingVolume.html",
+    "uiTooltip" : "\n\n Supported by LocalBoundingVolume"
+    },
+  "title" : "BBoxAddBBox_d",
+  "ports" : [
+    {
+      "objectType" : "Port",
+      "nodePortType" : "IO",
+      "name" : "this",
+      "execPortType" : "IO",
+      "typeSpec" : "LocalBoundingVolume"
+      },
+    {
+      "objectType" : "Port",
+      "nodePortType" : "Out",
+      "name" : "bboxd",
+      "execPortType" : "In",
+      "typeSpec" : "BBox_d"
+      }
+    ],
+  "extDeps" : {
+    "OpenVDBGeometry" : "*"
+    },
+  "presetGUID" : "A4DCAB7CEA50300BC0EA88DCC0B07CAB",
+  "code" : "require OpenVDBGeometry;\n\ndfgEntry {\n  this.bBoxAddBBox_d(bboxd);\n}\n"
+  }

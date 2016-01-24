@@ -1,0 +1,29 @@
+// Created by kl2dfg (processFunction)
+{
+  "objectType" : "Func",
+  "metadata" : {
+    "uiTooltip" : "\n\n Supported by VDBFloatMarch"
+    },
+  "title" : "VDBFloatMarch",
+  "ports" : [
+    {
+      "objectType" : "Port",
+      "nodePortType" : "Out",
+      "name" : "grid",
+      "execPortType" : "In",
+      "typeSpec" : "FloatGrid"
+      },
+    {
+      "objectType" : "Port",
+      "nodePortType" : "In",
+      "name" : "result",
+      "execPortType" : "Out",
+      "typeSpec" : "VDBFloatMarch"
+      }
+    ],
+  "extDeps" : {
+    "OpenVDBGeometry" : "*"
+    },
+  "presetGUID" : "603016F3F8727F69EF98221EFF519187",
+  "code" : "require OpenVDBGeometry;\n\ndfgEntry {\n  Ref<FloatGrid> grid_ref = grid;\n  result = VDBFloatMarch(grid_ref);\n}\n"
+  }

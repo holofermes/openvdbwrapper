@@ -1,0 +1,50 @@
+// Created by kl2dfg (processFunction)
+{
+  "objectType" : "Func",
+  "metadata" : {
+    "uiTooltip" : "@brief Sample a point in index space in the grid.\n@param x Fractional x-coordinate of point in index-coordinates of grid\n@param y Fractional y-coordinate of point in index-coordinates of grid\n@param z Fractional z-coordinate of point in index-coordinates of grid\n\n Supported by FloatGridSampler"
+    },
+  "title" : "SampleVoxel",
+  "ports" : [
+    {
+      "objectType" : "Port",
+      "nodePortType" : "Out",
+      "name" : "this",
+      "execPortType" : "In",
+      "typeSpec" : "FloatGridSampler"
+      },
+    {
+      "objectType" : "Port",
+      "nodePortType" : "Out",
+      "name" : "x",
+      "execPortType" : "In",
+      "typeSpec" : "Float32"
+      },
+    {
+      "objectType" : "Port",
+      "nodePortType" : "Out",
+      "name" : "y",
+      "execPortType" : "In",
+      "typeSpec" : "Float32"
+      },
+    {
+      "objectType" : "Port",
+      "nodePortType" : "Out",
+      "name" : "z",
+      "execPortType" : "In",
+      "typeSpec" : "Float32"
+      },
+    {
+      "objectType" : "Port",
+      "nodePortType" : "In",
+      "name" : "result",
+      "execPortType" : "Out",
+      "typeSpec" : "Float32"
+      }
+    ],
+  "extDeps" : {
+    "OpenVDBWrapper" : "*"
+    },
+  "presetGUID" : "F12766F807B95A6B135CBF572A27CFE8",
+  "code" : "require OpenVDBWrapper;\n\ndfgEntry {\n  result = this.sampleVoxel(x, y, z);\n}\n"
+  }

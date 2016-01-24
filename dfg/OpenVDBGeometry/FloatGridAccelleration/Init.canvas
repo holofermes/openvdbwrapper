@@ -1,0 +1,32 @@
+// Created by kl2dfg (processFunction)
+{
+  "objectType" : "Func",
+  "metadata" : {
+    "uiTooltip" : "\n\n Supported by FloatGridAccelleration"
+    },
+  "title" : "Init",
+  "ports" : [
+    {
+      "objectType" : "Port",
+      "nodePortType" : "IO",
+      "name" : "this",
+      "execPortType" : "IO",
+      "typeSpec" : "FloatGridAccelleration"
+      },
+    {
+      "objectType" : "Port",
+      "metadata" : {
+        "uiColor" : "{\n  \"r\" : 51,\n  \"g\" : 1,\n  \"b\" : 106\n  }"
+        },
+      "nodePortType" : "Out",
+      "name" : "volumes",
+      "execPortType" : "In",
+      "typeSpec" : "VDBVolumes"
+      }
+    ],
+  "extDeps" : {
+    "OpenVDBGeometry" : "*"
+    },
+  "presetGUID" : "F124D94CCD2A92AB8C3548762BA82AFF",
+  "code" : "require OpenVDBGeometry;\n\ndfgEntry {\n  Ref<VDBVolumes> volumes_ref = volumes;\n  this.init(volumes_ref);\n}\n"
+  }

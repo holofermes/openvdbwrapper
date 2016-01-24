@@ -1,0 +1,32 @@
+// Created by kl2dfg (processFunction)
+{
+  "objectType" : "Func",
+  "metadata" : {
+    "uiTooltip" : "Adds a point for each grid in the `grids` array\n\n Supported by VDBVolumes"
+    },
+  "title" : "AddFloatGrids",
+  "ports" : [
+    {
+      "objectType" : "Port",
+      "metadata" : {
+        "uiColor" : "{\n  \"r\" : 51,\n  \"g\" : 1,\n  \"b\" : 106\n  }"
+        },
+      "nodePortType" : "IO",
+      "name" : "this",
+      "execPortType" : "IO",
+      "typeSpec" : "VDBVolumes"
+      },
+    {
+      "objectType" : "Port",
+      "nodePortType" : "Out",
+      "name" : "grids",
+      "execPortType" : "In",
+      "typeSpec" : "FloatGrid[]"
+      }
+    ],
+  "extDeps" : {
+    "OpenVDBGeometry" : "*"
+    },
+  "presetGUID" : "0BCC2D31D805BC56333C6BA0540760E2",
+  "code" : "require OpenVDBGeometry;\n\ndfgEntry {\n  this.addFloatGrids(grids);\n}\n"
+  }

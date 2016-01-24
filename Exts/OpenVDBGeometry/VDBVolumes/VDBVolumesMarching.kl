@@ -1,0 +1,221 @@
+struct VDBFloatMarch{
+  FloatConstAccessor accessor[];
+  FloatGridSamplerNative sampler[];
+  VolumeRayIntersector primary[];
+  VolumeRayIntersector shadow[];
+  Transform transform;
+};
+
+function VDBFloatMarch(Ref<FloatGrid> grid){
+// function VDBFloatMarch(Ref<FloatGrid> grid, io Transform transform){
+  // this.transform = transform;
+  this.init(grid);
+}
+
+private function VDBFloatMarch.init!(Ref<FloatGrid> grid){
+  Size count = getCoreCount();
+  this.reset();
+  this.primary.resize(count);
+  this.shadow.resize(count);
+  for (Size i = 0; i < count; i++) {
+    // grid.tree.evalActiveBoundingBox(bbox, /*visit individual voxels*/false);
+    this.primary[i].__construct(grid, 0);
+    this.shadow[i].__construct(this.primary[i]);
+    this.accessor.push(grid.getConstAccessor());
+    this.sampler.push(FloatGridSamplerNative(this.accessor[i], grid.transform));
+  };
+
+  this.transform = grid.transform;
+}
+
+function VDBFloatMarch.reset!(){
+  this.primary.resize(0);
+  this.shadow.resize(0);
+  this.accessor.resize(0);
+  this.sampler.resize(0);
+}
+
+function Boolean VDBFloatMarch.intersect?(Size tid,
+                                          Vec3 wsP,
+                                          Vec3 dir,
+                                          String rayType){
+  VdbRay isState(this.transform.worldToIndex(Vec3_d(wsP.x, wsP.y, wsP.z)),
+                 Vec3_d(dir.x, dir.y, dir.z));
+  if(rayType == "Primary")
+    return this.primary[tid].setIndexRay(isState);
+  return this.shadow[tid].setIndexRay(isState);
+  
+}
+
+function Boolean VDBFloatMarch.hits?(Size tid,
+                                     Vec3 wsP,
+                                     Vec3 dir,
+                                     String rayType,
+                                     io TimeSpan ts[])
+{
+  if(!this.intersect(tid, wsP, dir, rayType))return false;
+  if(rayType == "Primary"){
+    this.primary[tid].hits(ts);
+  }
+  else if(rayType == "Transmittance"){
+    this.shadow[tid].hits(ts);
+  }
+  return true;
+}
+
+
+function Boolean VDBFloatMarch.march?(Size tid,
+                                      Vec3 wsP,
+                                      Vec3 dir,
+                                      String rayType,
+                                      io Float64 tMin,
+                                      io Float64 tMax)
+{
+  if(!this.intersect(tid, wsP, dir, rayType))return false;
+  Boolean marching;
+  if(rayType == "Primary"){
+    marching = this.primary[tid].march(tMin, tMax);
+  }
+  else if(rayType == "Transmittance"){
+    marching = this.shadow[tid].march(tMin, tMax);
+  }
+  return marching;
+}
+
+
+
+
+function Boolean VDBFloatMarch.intersect?(Size tid,
+                                          Vec3 wsP,
+                                          Vec3 dir,
+                                          String rayType,
+                                          Transform tx)
+{
+  VdbRay isState(tx.worldToIndex(Vec3_d(wsP.x, wsP.y, wsP.z)),
+                 Vec3_d(dir.x, dir.y, dir.z));
+  if(rayType == "Primary")
+    return this.primary[tid].setIndexRay(isState);
+  return this.shadow[tid].setIndexRay(isState);
+  
+}
+
+function Boolean VDBFloatMarch.hits?(Size tid,
+                                     Vec3 wsP,
+                                     Vec3 dir,
+                                     String rayType,
+                                     Transform tx,
+                                     io TimeSpan ts[])
+{
+  if(!this.intersect(tid, wsP, dir, rayType, tx))return false;
+  if(rayType == "Primary"){
+    this.primary[tid].hits(ts);
+  }
+  else if(rayType == "Transmittance"){
+    this.shadow[tid].hits(ts);
+  }
+  return true;
+}
+
+
+function Boolean VDBFloatMarch.march?(Size tid,
+                                      Vec3 wsP,
+                                      Vec3 dir,
+                                      String rayType,
+                                      Transform tx,
+                                      io Float64 tMin,
+                                      io Float64 tMax)
+{
+  if(!this.intersect(tid, wsP, dir, rayType, tx))return false;
+  Boolean marching;
+  if(rayType == "Primary"){
+    marching = this.primary[tid].march(tMin, tMax);
+  }
+  else if(rayType == "Transmittance"){
+    marching = this.shadow[tid].march(tMin, tMax);
+  }
+  return marching;
+}
+
+
+
+
+function Float32 VDBFloatMarch.isSample?(Size tid, Vec3_d isP){
+  return this.sampler[tid].isSample(isP);
+}
+
+function Float32 VDBFloatMarch.isTimeSample?(Size tid,
+                                                   Float64 pT,
+                                                   String rayType)
+{
+  if(rayType == "Primary")return this.isSample(tid, this.primary[tid].getIndexPos(pT));
+  return this.isSample(tid, this.shadow[tid].getIndexPos(pT));
+}
+
+function Float32 VDBFloatMarch.isTimeSample?(Size tid,
+                                             Float64 pT,
+                                             io Vec3_d wsP,
+                                             String rayType)
+{
+  Vec3_d isP = this.getIndexPos(tid, pT, rayType);
+  wsP = this.transform.indexToWorld(isP);
+  return this.isSample(tid, isP);
+}
+
+function Float32 VDBFloatMarch.isTimeSample?(Size tid,
+                                             Float64 pT,
+                                             io Vec3_d wsP,
+                                             String rayType,
+                                             Transform tx)
+{
+  Vec3_d isP = this.getIndexPos(tid, pT, rayType);
+  wsP = tx.indexToWorld(isP);
+  return this.isSample(tid, isP);
+}
+
+function Float32 VDBFloatMarch.sample?(Size tid,
+                                       Float64 pT,
+                                       io Vec3_d wsP,
+                                       String rayType)
+{
+  return this.isTimeSample(tid, pT, wsP, rayType);
+}
+
+function Float32 VDBFloatMarch.sample?(Size tid,
+                                     Float64 pT,
+                                     String rayType)
+{
+  return this.isTimeSample(tid, pT, rayType);
+}
+
+function Float32 VDBFloatMarch.sample?(Size tid,
+                                             Float64 pT,
+                                             io Vec3_d wsP,
+                                             String rayType,
+                                             Transform tx)
+{
+  return this.isTimeSample(tid, pT, wsP, rayType, tx);
+}
+
+function Vec3_d VDBFloatMarch.getIndexPos?(Size tid,
+                                                 Float64 pT,
+                                                 String rayType)
+{
+  if(rayType == "Primary")return this.primary[tid].getIndexPos(pT);
+  return this.shadow[tid].getIndexPos(pT);
+}
+
+function Float64 VDBFloatMarch.getWorldTime?(Size tid,
+                                                   Float64 pT,
+                                                   String rayType)
+{
+  if(rayType == "Primary")return this.primary[tid].getWorldTime(pT);
+  return this.shadow[tid].getWorldTime(pT);
+}
+
+function Vec3_d VDBFloatMarch.getWorldPos?(Size tid,
+                                                 Float64 pT,
+                                                 String rayType)
+{
+  if(rayType == "Primary")return this.primary[tid].getWorldPos(pT);
+  return this.shadow[tid].getWorldPos(pT);
+}

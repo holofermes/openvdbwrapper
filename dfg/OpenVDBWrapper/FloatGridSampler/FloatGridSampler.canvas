@@ -1,0 +1,36 @@
+// Created by kl2dfg (processFunction)
+{
+  "objectType" : "Func",
+  "metadata" : {
+    "uiTooltip" : "@param acc  a ValueAccessor to be sampled\n@param transform is used when sampling world space locations.\n\n Supported by FloatGridSampler"
+    },
+  "title" : "FloatGridSampler",
+  "ports" : [
+    {
+      "objectType" : "Port",
+      "nodePortType" : "Out",
+      "name" : "acc",
+      "execPortType" : "In",
+      "typeSpec" : "FloatConstAccessor"
+      },
+    {
+      "objectType" : "Port",
+      "nodePortType" : "Out",
+      "name" : "transform",
+      "execPortType" : "In",
+      "typeSpec" : "Transform"
+      },
+    {
+      "objectType" : "Port",
+      "nodePortType" : "In",
+      "name" : "result",
+      "execPortType" : "Out",
+      "typeSpec" : "FloatGridSampler"
+      }
+    ],
+  "extDeps" : {
+    "OpenVDBWrapper" : "*"
+    },
+  "presetGUID" : "79A86D9F3E8ED6E3BA9CEC10BCB7BE04",
+  "code" : "require OpenVDBWrapper;\n\ndfgEntry {\n  result = FloatGridSampler(acc, transform);\n}\n"
+  }

@@ -1,0 +1,43 @@
+// Created by kl2dfg (processFunction)
+{
+  "objectType" : "Func",
+  "metadata" : {
+    "uiTooltip" : "Replaces the value located at targetIndex with source attribute's value located at sourceIndex.\nThe source attribute will be of the same type.\n\n Supported by FloatGridAttribute"
+    },
+  "title" : "CopyValue",
+  "ports" : [
+    {
+      "objectType" : "Port",
+      "nodePortType" : "IO",
+      "name" : "this",
+      "execPortType" : "IO",
+      "typeSpec" : "FloatGridAttribute"
+      },
+    {
+      "objectType" : "Port",
+      "nodePortType" : "Out",
+      "name" : "sourceAttr",
+      "execPortType" : "In",
+      "typeSpec" : "Object"
+      },
+    {
+      "objectType" : "Port",
+      "nodePortType" : "Out",
+      "name" : "sourceIndex",
+      "execPortType" : "In",
+      "typeSpec" : "Size"
+      },
+    {
+      "objectType" : "Port",
+      "nodePortType" : "Out",
+      "name" : "targetIndex",
+      "execPortType" : "In",
+      "typeSpec" : "Size"
+      }
+    ],
+  "extDeps" : {
+    "OpenVDBGeometry" : "*"
+    },
+  "presetGUID" : "DF298CA56B3916CB42AB39EC44CDB04C",
+  "code" : "require OpenVDBGeometry;\n\ndfgEntry {\n  Ref<Object> sourceAttr_ref = sourceAttr;\n  this.copyValue(sourceAttr_ref, sourceIndex, targetIndex);\n}\n"
+  }

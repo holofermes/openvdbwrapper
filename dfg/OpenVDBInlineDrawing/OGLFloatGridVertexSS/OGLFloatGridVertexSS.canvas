@@ -1,0 +1,29 @@
+// Created by kl2dfg (processFunction)
+{
+  "objectType" : "Func",
+  "metadata" : {
+    "uiTooltip" : "\n\n Supported by OGLFloatGridVertexSS"
+    },
+  "title" : "OGLFloatGridVertexSS",
+  "ports" : [
+    {
+      "objectType" : "Port",
+      "nodePortType" : "Out",
+      "name" : "name",
+      "execPortType" : "In",
+      "typeSpec" : "String"
+      },
+    {
+      "objectType" : "Port",
+      "nodePortType" : "In",
+      "name" : "result",
+      "execPortType" : "Out",
+      "typeSpec" : "OGLFloatGridVertexSS"
+      }
+    ],
+  "extDeps" : {
+    "OpenVDBInlineDrawing" : "*"
+    },
+  "presetGUID" : "ECD561D61B4E9F3CAE46E380D1631B22",
+  "code" : "require OpenVDBInlineDrawing;\n\ndfgEntry {\n  result = OGLFloatGridVertexSS(name);\n}\n"
+  }

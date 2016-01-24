@@ -1,0 +1,8 @@
+{
+  "code": [
+    "Shaders/OGLFloatGridVertexSS.kl",
+    "Shaders/OGLVDBVolumesBBox.kl",
+    "InlineVDBVolumesShape.kl",
+    "OGLVDBVolumesShapeAdaptor.kl"
+  ]
+}

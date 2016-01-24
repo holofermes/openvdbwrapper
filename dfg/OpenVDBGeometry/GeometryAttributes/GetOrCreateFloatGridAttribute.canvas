@@ -1,0 +1,40 @@
+// Created by kl2dfg (processFunction)
+{
+  "objectType" : "Func",
+  "metadata" : {
+    "uiDocUrl" : "http://docs.fabric-engine.com/FabricEngine/2.0.0/HTML/KLExtensionsGuide/Geometry/GeometryAttributes.html",
+    "uiTooltip" : "If it exists, returns the attribute of that name, else creates it.\n\n Supported by GeometryAttributes"
+    },
+  "title" : "GetOrCreateFloatGridAttribute",
+  "ports" : [
+    {
+      "objectType" : "Port",
+      "metadata" : {
+        "uiColor" : "{\n  \"r\" : 51,\n  \"g\" : 1,\n  \"b\" : 106\n  }"
+        },
+      "nodePortType" : "IO",
+      "name" : "this",
+      "execPortType" : "IO",
+      "typeSpec" : "GeometryAttributes"
+      },
+    {
+      "objectType" : "Port",
+      "nodePortType" : "Out",
+      "name" : "name",
+      "execPortType" : "In",
+      "typeSpec" : "String"
+      },
+    {
+      "objectType" : "Port",
+      "nodePortType" : "In",
+      "name" : "result",
+      "execPortType" : "Out",
+      "typeSpec" : "FloatGridAttribute"
+      }
+    ],
+  "extDeps" : {
+    "OpenVDBGeometry" : "*"
+    },
+  "presetGUID" : "7DC0C71423F1D65620F81AA55687358D",
+  "code" : "require OpenVDBGeometry;\n\ndfgEntry {\n  Ref<FloatGridAttribute> result_ref = this.getOrCreateFloatGridAttribute(name);\n  result = result_ref;\n}\n"
+  }

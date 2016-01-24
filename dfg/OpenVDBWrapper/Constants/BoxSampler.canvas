@@ -1,0 +1,25 @@
+// Created by kl2dfg (processStructConstant)
+{
+  "objectType" : "Func",
+  "metadata" : {
+    "uiAlwaysShowDaisyChainPorts" : "true"
+    },
+  "title" : "BoxSampler",
+  "ports" : [
+    {
+      "objectType" : "Port",
+      "nodePortType" : "Out",
+      "defaultValues" : {
+        "BoxSampler" : {}
+        },
+      "name" : "value",
+      "execPortType" : "In",
+      "typeSpec" : "BoxSampler"
+      }
+    ],
+  "extDeps" : {
+    "OpenVDBWrapper" : "*"
+    },
+  "presetGUID" : "BC4BE40D8019DAF14251291FD6B16FD0",
+  "code" : "dfgEntry {\n}\n"
+  }

@@ -1,0 +1,62 @@
+require VolumeCache;
+require OpenVDBWrapper;
+/// Adds a grid
+function VDBVolumes.addFloatGrid!(FloatGrid grid) {
+  Integer voff = this.size();
+  this.resize(voff + 1);
+  this.setFloatGrid( voff, grid );
+  this.incrementFloatGridVersion();
+}
+
+
+/// Adds a point for each grid in the `grids` array
+function VDBVolumes.addFloatGrids!(FloatGrid grids[]) {
+  Integer voff = this.size();
+  Integer goff = grids.size();
+  this.resize(voff + goff);
+
+  for (Integer i = 0; i < goff; i++) {
+    this.setFloatGrid( voff, grids[i] );
+    voff++;
+  }
+  this.incrementFloatGridVersion();
+}
+
+function Ref<FloatGrid> VDBVolumes.getGrid?(String field) {
+  return this.gridAttributes.getGrid(field);
+}
+
+function Vec2 VDBVolumes.minMax?(String field) {
+  Ref<FloatGrid> grid = this.getGrid(field);
+  Float32 minValue, maxValue;
+  FloatMinMaxVoxel(FloatLeafManager(grid), minValue, maxValue);
+  return Vec2(minValue, maxValue);
+}
+
+function VDBVolumes.addFromFileField!(String filePath, String fieldName, Boolean levelSet){
+  VolumeCache vc = VolumeCache_GetInstance();
+
+  Ref<FloatGrid> grid = vc.setGet(filePath, fieldName);
+  GeometryAttributes vdbAttr = this.getAttributes();
+
+  Vec3Attribute vdbPos = vdbAttr.getOrCreatePositions();
+  Vec3Attribute vdbNor();
+  ScalarAttribute vdbSamples = vdbAttr.getOrCreateAttribute('vertexColors', ScalarAttribute);
+  vdbNor = vdbAttr.getOrCreateNormals();
+  FloatGridAttribute floatGrids = vdbAttr.getOrCreateFloatGridAttribute(grid.getName());
+
+  vdbPos.resize(0);
+  vdbSamples.resize(1);
+  vdbNor.resize(1);
+  floatGrids.resize(1);
+  floatGrids.values.resize(1);
+  floatGrids.setGrid(0, grid);
+  floatGrids.incrementVersion();
+
+  // this.setVizPoints(countVisPointsInGrid(grid));
+  // generatePointsFromGrid(grid, vdbPos.values, vdbNor.values, vdbSamples.values, levelSet);
+
+  vdbPos.incrementVersion();
+  vdbSamples.incrementVersion();
+  vdbNor.incrementVersion();
+}

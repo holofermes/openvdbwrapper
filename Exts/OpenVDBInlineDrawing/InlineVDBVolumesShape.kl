@@ -1,0 +1,67 @@
+/*
+ *  Copyright 2010-2015 Fabric Software Inc. All rights reserved.
+ */
+
+/**
+\versionadded 1.12.0
+
+The InlineVDBVolumesShape inherits from the InlineShape object. It provides a shape type for VDBVolumes objects for direct rendering. The InlineVDBVolumesShape keeps a reference to the grid, so if the grid change (being deformed etc) the shape will updates its buffers automatically.
+
+\example
+    // create some volumes
+    VDBVolumes volumes = VDBVolumes();
+    volumes.addGrid(12);
+
+    // create a shape
+    InlineShape shape = InlineVDBVolumesShape('volumes', volumes);
+\endexample
+*/
+require OpenVDBGeometry;
+
+object InlineVDBVolumesShape : InlineShapeBase {
+  VDBVolumes volumes;
+  Float32 voxelQuality;
+
+  InlineShapeAdaptor adaptor;
+};
+
+/// default constructor, taking a name and a VDBVolumes
+function InlineVDBVolumesShape(String name, VDBVolumes volumes) {
+  this.name = name;
+  this.geo = volumes;
+  this.volumes = volumes;
+  this.voxelQuality = 0.1;
+}
+
+/// returns the VDBVolumes used by this shape
+function VDBVolumes InlineVDBVolumesShape.getVolumes() {
+  return this.volumes;
+}
+
+/// returns the point size used for rendering
+function Scalar InlineVDBVolumesShape.getVoxelQuality() {
+  return this.voxelQuality;
+}
+
+/// sets the point size used for rendering
+function InlineVDBVolumesShape.setVoxelQuality!(Scalar voxelQuality) {
+  this.voxelQuality = voxelQuality;
+}
+
+/// draws the instance on screen. this is used by the
+/// material and should not be called manually.
+/// \internal
+function Boolean InlineVDBVolumesShape.draw!(io DrawContext context, Index index, Size count) {
+
+  if(!this.adaptor) {
+    InlineDrawing drawing = context.getMetaData('drawing');
+    this.adaptor = drawing.getShapeAdaptor(this.type());
+  }
+  context.setMetaData('shape', Object(this));
+  Ref<InlineShape> thisShape = this;
+  if(!this.adaptor || !this.adaptor.draw(context, thisShape, index, count))
+    return false;
+
+  return true;
+}
+

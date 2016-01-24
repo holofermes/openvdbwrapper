@@ -1,0 +1,29 @@
+// Created by kl2dfg (processFunction)
+{
+  "objectType" : "Func",
+  "metadata" : {
+    "uiTooltip" : "returns the types this adaptor is capable of drawing\n\n Supported by OGLVDBVolumesShapeAdaptor"
+    },
+  "title" : "GetShapeTypes",
+  "ports" : [
+    {
+      "objectType" : "Port",
+      "nodePortType" : "Out",
+      "name" : "this",
+      "execPortType" : "In",
+      "typeSpec" : "OGLVDBVolumesShapeAdaptor"
+      },
+    {
+      "objectType" : "Port",
+      "nodePortType" : "In",
+      "name" : "result",
+      "execPortType" : "Out",
+      "typeSpec" : "String[]"
+      }
+    ],
+  "extDeps" : {
+    "OpenVDBInlineDrawing" : "*"
+    },
+  "presetGUID" : "4BFBEFC0C48F5E474CD188949CF1D955",
+  "code" : "require OpenVDBInlineDrawing;\n\ndfgEntry {\n  result = this.getShapeTypes();\n}\n"
+  }

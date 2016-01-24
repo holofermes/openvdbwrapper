@@ -1,0 +1,17 @@
+require Geometry;
+require OpenVDB;
+
+
+function VolumeToMesh(FloatGrid grid,  io PolygonMesh mesh){
+
+  Float32 positions[];
+  UInt32 counts[], indices[];
+  VolumeToMesh(grid, positions, counts, indices, 0.0 /*isovalue*/, 0.0 /*adaptivity*/) ;
+
+  Float32 posRef<>(positions);
+  mesh.setPointsFromExternalArray(posRef, 3);
+
+  UInt32 countsRef<>(counts);
+  UInt32 indicesRef<>(indices);
+  mesh.addPolygons(countsRef, indicesRef);
+}

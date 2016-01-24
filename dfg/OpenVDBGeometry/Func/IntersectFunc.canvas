@@ -1,0 +1,43 @@
+// Created by kl2dfg (processFunction)
+{
+  "objectType" : "Func",
+  "metadata" : {
+    "uiTooltip" : "\n\n Supported by Boolean"
+    },
+  "title" : "IntersectFunc",
+  "ports" : [
+    {
+      "objectType" : "Port",
+      "nodePortType" : "Out",
+      "name" : "grid",
+      "execPortType" : "In",
+      "typeSpec" : "FloatGrid"
+      },
+    {
+      "objectType" : "Port",
+      "nodePortType" : "Out",
+      "name" : "result",
+      "execPortType" : "In",
+      "typeSpec" : "VDBVolumesRaycastResult"
+      },
+    {
+      "objectType" : "Port",
+      "nodePortType" : "IO",
+      "name" : "maxDistance",
+      "execPortType" : "IO",
+      "typeSpec" : "Scalar"
+      },
+    {
+      "objectType" : "Port",
+      "nodePortType" : "In",
+      "name" : "result_2",
+      "execPortType" : "Out",
+      "typeSpec" : "Boolean"
+      }
+    ],
+  "extDeps" : {
+    "OpenVDBGeometry" : "*"
+    },
+  "presetGUID" : "7E4B9CC27A207D1653853C24FD7DF79E",
+  "code" : "require OpenVDBGeometry;\n\ndfgEntry {\n  Ref<FloatGrid> grid_ref = grid;\n  Ref<VDBVolumesRaycastResult> result_ref = result;\n  result_2 = intersectFunc(grid_ref, result_ref, maxDistance);\n}\n"
+  }

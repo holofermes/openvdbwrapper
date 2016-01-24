@@ -1,0 +1,25 @@
+// Created by kl2dfg (processFunction)
+{
+  "objectType" : "Func",
+  "metadata" : {
+    "uiTooltip" : "Helper for incrementing the version of the positions attribute after value changes.\nSee :ref:`attributeversioning` for more information.\n\n Supported by VDBVolumes"
+    },
+  "title" : "IncrementPositionsVersion",
+  "ports" : [
+    {
+      "objectType" : "Port",
+      "metadata" : {
+        "uiColor" : "{\n  \"r\" : 51,\n  \"g\" : 1,\n  \"b\" : 106\n  }"
+        },
+      "nodePortType" : "IO",
+      "name" : "this",
+      "execPortType" : "IO",
+      "typeSpec" : "VDBVolumes"
+      }
+    ],
+  "extDeps" : {
+    "OpenVDBGeometry" : "*"
+    },
+  "presetGUID" : "F187C10668BBBAB9E68DEC675B0BD6DF",
+  "code" : "require OpenVDBGeometry;\n\ndfgEntry {\n  this.incrementPositionsVersion();\n}\n"
+  }

@@ -1,0 +1,32 @@
+// Created by kl2dfg (processFunction)
+{
+  "objectType" : "Func",
+  "metadata" : {
+    "uiTooltip" : "Returns the bounding volume of the geometry, as computed from the positions attribute.\nThis function will cache the bounding box given a specific version of the positions attribute,\nand will update it lazily, in a thread-safe fashion. The internal cache is stored in the\nBaseGeometry.metaData container.\n\n Supported by VDBVolumes"
+    },
+  "title" : "GetBoundingVolume",
+  "ports" : [
+    {
+      "objectType" : "Port",
+      "metadata" : {
+        "uiColor" : "{\n  \"r\" : 51,\n  \"g\" : 1,\n  \"b\" : 106\n  }"
+        },
+      "nodePortType" : "Out",
+      "name" : "this",
+      "execPortType" : "In",
+      "typeSpec" : "VDBVolumes"
+      },
+    {
+      "objectType" : "Port",
+      "nodePortType" : "In",
+      "name" : "result",
+      "execPortType" : "Out",
+      "typeSpec" : "LocalBoundingVolume"
+      }
+    ],
+  "extDeps" : {
+    "OpenVDBGeometry" : "*"
+    },
+  "presetGUID" : "5837207BDB3FBCD11124EEFABF9278B1",
+  "code" : "require OpenVDBGeometry;\n\ndfgEntry {\n  result = this.getBoundingVolume();\n}\n"
+  }

@@ -1,0 +1,32 @@
+// Created by kl2dfg (processFunction)
+{
+  "objectType" : "Func",
+  "metadata" : {
+    "uiTooltip" : "Defines the attribute that will be used for 'setFloatGrid' and 'getFloatGrid' (see :ref:`gridAttributes`)\n\n Supported by VDBVolumes"
+    },
+  "title" : "SetFloatGridAttribute",
+  "ports" : [
+    {
+      "objectType" : "Port",
+      "metadata" : {
+        "uiColor" : "{\n  \"r\" : 51,\n  \"g\" : 1,\n  \"b\" : 106\n  }"
+        },
+      "nodePortType" : "IO",
+      "name" : "this",
+      "execPortType" : "IO",
+      "typeSpec" : "VDBVolumes"
+      },
+    {
+      "objectType" : "Port",
+      "nodePortType" : "Out",
+      "name" : "gridAttributes",
+      "execPortType" : "In",
+      "typeSpec" : "FloatGridAttribute"
+      }
+    ],
+  "extDeps" : {
+    "OpenVDBGeometry" : "*"
+    },
+  "presetGUID" : "D31593371BB65625FEDDAC41F4EAAE44",
+  "code" : "require OpenVDBGeometry;\n\ndfgEntry {\n  Ref<FloatGridAttribute> gridAttributes_ref = gridAttributes;\n  this.setFloatGridAttribute(gridAttributes_ref);\n}\n"
+  }

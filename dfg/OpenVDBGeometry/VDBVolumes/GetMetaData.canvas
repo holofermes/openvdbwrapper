@@ -1,0 +1,32 @@
+// Created by kl2dfg (processFunction)
+{
+  "objectType" : "Func",
+  "metadata" : {
+    "uiTooltip" : "Returns the metaData container for this Geometry.\n\n Supported by VDBVolumes"
+    },
+  "title" : "GetMetaData",
+  "ports" : [
+    {
+      "objectType" : "Port",
+      "metadata" : {
+        "uiColor" : "{\n  \"r\" : 51,\n  \"g\" : 1,\n  \"b\" : 106\n  }"
+        },
+      "nodePortType" : "Out",
+      "name" : "this",
+      "execPortType" : "In",
+      "typeSpec" : "VDBVolumes"
+      },
+    {
+      "objectType" : "Port",
+      "nodePortType" : "In",
+      "name" : "result",
+      "execPortType" : "Out",
+      "typeSpec" : "ThreadsafeMetaDataContainer"
+      }
+    ],
+  "extDeps" : {
+    "OpenVDBGeometry" : "*"
+    },
+  "presetGUID" : "36F2C2E35717E10F8B03CC7B96B1C462",
+  "code" : "require OpenVDBGeometry;\n\ndfgEntry {\n  Ref<ThreadsafeMetaDataContainer> result_ref = this.getMetaData();\n  result = result_ref;\n}\n"
+  }

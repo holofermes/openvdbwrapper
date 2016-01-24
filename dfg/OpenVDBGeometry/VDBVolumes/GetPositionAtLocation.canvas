@@ -1,0 +1,42 @@
+// Created by kl2dfg (processFunction)
+{
+  "objectType" : "Func",
+  "metadata" : {
+    "uiTooltip" : "Evaluates the position attribute at a specific location.\nFor a sized particle, the returned position might be a position on its bounding sphere surface when applicable\n(eg: resulting from a :kl-ref:`VDBVolumes.raycast` or :kl-ref:`VDBVolumes.getClosest` call).\nSee :kl-ref:`VDBVolumes.getLocationBoundingSphereCoordinate` for more information.\n\n Supported by VDBVolumes"
+    },
+  "title" : "GetPositionAtLocation",
+  "ports" : [
+    {
+      "objectType" : "Port",
+      "metadata" : {
+        "uiColor" : "{\n  \"r\" : 51,\n  \"g\" : 1,\n  \"b\" : 106\n  }"
+        },
+      "nodePortType" : "Out",
+      "name" : "this",
+      "execPortType" : "In",
+      "typeSpec" : "VDBVolumes"
+      },
+    {
+      "objectType" : "Port",
+      "nodePortType" : "Out",
+      "name" : "location",
+      "execPortType" : "In",
+      "typeSpec" : "GeometryLocation"
+      },
+    {
+      "objectType" : "Port",
+      "metadata" : {
+        "uiColor" : "{\n  \"r\" : 255,\n  \"g\" : 242,\n  \"b\" : 0\n  }"
+        },
+      "nodePortType" : "In",
+      "name" : "result",
+      "execPortType" : "Out",
+      "typeSpec" : "Vec3"
+      }
+    ],
+  "extDeps" : {
+    "OpenVDBGeometry" : "*"
+    },
+  "presetGUID" : "34D6328B6A08AF3220FDA28080D38828",
+  "code" : "require OpenVDBGeometry;\n\ndfgEntry {\n  result = this.getPositionAtLocation(location);\n}\n"
+  }

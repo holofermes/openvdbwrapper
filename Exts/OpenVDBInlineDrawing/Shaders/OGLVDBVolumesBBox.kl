@@ -1,0 +1,52 @@
+require FabricOGL;
+
+object OGLVDBVolumesBBox: OGLInlineShader {};
+
+// default constructor without a name
+function OGLVDBVolumesBBox() {
+  // Avoid calling the init method if this default constructor is being invoked
+  // during the construction of a derived object.
+  if(this.type() == OGLVDBVolumesBBox)
+    this.init(String(this.type()));
+}
+
+// default constructor taking a name
+function OGLVDBVolumesBBox(String name) {
+    this.init(name);
+}
+function OGLVDBVolumesBBox.init!(String name) {
+  this.name = name;
+  this.setVertexCode("
+      #version 150 //required for OSX support
+
+      uniform mat4 u_viewMatrix;
+      uniform mat4 u_projection;
+      uniform mat4 u_modelMatrix;
+      uniform mat3 u_normalMatrix;
+
+      in vec4 positions;
+
+      void main(){
+        v_position = u_modelMatrix * positions;
+        vec4 v_positionInv = (u_viewMatrix * vec4(v_position.xyz, 1.0));
+        gl_Position = u_projection * v_positionInv;
+      }
+    ");
+  this.setFragmentCode("
+      #version 120 // We require OpenGL 2.1 for InlineDrawing, which supports GLSL 1.2
+
+      uniform vec4 u_color;
+
+      void main(){
+        gl_FragColor = u_color;
+      }
+    ");
+  this.defineUniform(InlineUniform("u_viewMatrix", Mat44()));
+  this.defineUniform(InlineUniform("u_projection", Mat44()));
+  this.defineUniform(InlineUniform("u_modelMatrix", Mat44()));
+  this.defineUniform(InlineUniform("u_normalMatrix", Mat33()));
+
+  this.defineAttribute('positions', "Vec3");
+  this.defineAttribute('normals', "Vec3");
+  this.defineAttribute('vertexColors', "Vec4");
+}
