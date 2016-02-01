@@ -130,6 +130,23 @@ inline VDBVolumes.setVizPoints!( Size count ) {
   this.incrementPositionsVersion();
 }
 
+/// Adds N points and returns the index of the first of the consecutive indices.
+inline Size VDBVolumes.addPoints!( Size count ) {
+  this._incrementStructureVersion();
+  Size prevSize = this.attributes.size();
+  this.attributes.resize( prevSize + count );
+  return prevSize;
+}
+
+/// Changes the number of points, adding or truncating the last ones.
+inline VDBVolumes.resizePoints!( Size newSize ) {
+  if( newSize != this.attributes.size() ) {
+    this._incrementStructureVersion();
+    this.attributes.resize( newSize );
+  }
+}
+
+
 
 /// Returns the number of VDBVolumes.
 inline Size VDBVolumes.size() {

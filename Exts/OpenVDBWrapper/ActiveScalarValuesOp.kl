@@ -8,7 +8,7 @@ function Vec3(Vec3_d rhs){
   this.z = Float32(rhs.z);
 }
 
-const Size maxVoxelPoints = 26000000;
+const Size maxVoxelPoints = 2600;
 
 operator pointGeneratorAttribute<<<idx>>>(io Float32 values[], 
                                           io Vec3 normals[],

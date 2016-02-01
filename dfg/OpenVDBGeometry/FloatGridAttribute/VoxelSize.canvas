@@ -4,7 +4,7 @@
   "metadata" : {
     "uiTooltip" : "\n\n Supported by FloatGridAttribute"
     },
-  "title" : "GetGrid",
+  "title" : "VoxelSize",
   "ports" : [
     {
       "objectType" : "Port",
@@ -22,15 +22,18 @@
       },
     {
       "objectType" : "Port",
+      "metadata" : {
+        "uiColor" : "{\n  \"r\" : 255,\n  \"g\" : 242,\n  \"b\" : 0\n  }"
+        },
       "nodePortType" : "In",
       "name" : "result",
       "execPortType" : "Out",
-      "typeSpec" : "FloatGrid"
+      "typeSpec" : "Vec3_d"
       }
     ],
   "extDeps" : {
     "OpenVDBGeometry" : "*"
     },
-  "presetGUID" : "A845FDBDA88F6C02D1DBD1653D5EF559",
-  "code" : "require OpenVDBGeometry;\n\ndfgEntry {\n  result = this.getGrid(index);\n}\n"
+  "presetGUID" : "876D24E9FC4BB5E742823AA81F055064",
+  "code" : "require OpenVDBGeometry;\n\ndfgEntry {\n  result = this.voxelSize(index);\n}\n"
   }

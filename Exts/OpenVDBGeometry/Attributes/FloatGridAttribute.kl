@@ -42,13 +42,39 @@ inline FloatGrid FloatGridAttribute.getGrid?( String name ) {
   return this.values[this.lut[name]];
 }
 
-inline FloatGrid FloatGridAttribute.getGrid!( String name ) {
-  return this.values[this.lut[name]];
+inline FloatGrid FloatGridAttribute.getGrid!( Size index ) {
+  return this.values[index];
 }
+
+inline FloatGrid FloatGridAttribute.getGrid!( ) {
+  return this.values[0];
+}
+
 
 inline FloatGridAttribute.setGrid!( Size index, FloatGrid grid ) {
   this.values[index] = grid;
   this.lut[grid.getName()] = index;
+}
+
+inline FloatGridAttribute.setGrid!( FloatGrid grid ) {
+  this.values[0] = grid;
+  this.lut[grid.getName()] = 0;
+}
+
+inline Vec3_d FloatGridAttribute.voxelSize!( String name ) {
+  return this.values[this.lut[name]].voxelSize();
+}
+
+inline Vec3_d FloatGridAttribute.voxelSize!( Size index ) {
+  return this.values[index].voxelSize();
+}
+
+inline Vec3_d FloatGridAttribute.voxelSize!( ) {
+  report(this.lut);
+  for(name, index in this.lut){
+    report("name: " + name + " index: " + index);
+  }
+  return this.values[0].voxelSize();
 }
 
 
